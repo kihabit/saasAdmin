@@ -388,7 +388,7 @@ $db->close();
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <nav class="sidebar">
+        <!-- <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -429,8 +429,8 @@ $db->close();
                    alert
                 </a>
             </div>
-        </nav>
-
+        </nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
         <!-- Main Wrapper -->
         <div class="main-wrapper">
             <!-- Header -->

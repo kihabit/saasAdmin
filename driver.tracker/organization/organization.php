@@ -222,7 +222,7 @@ $db->close();
 </head>
 <body>
 <div class="app-container">
-<nav class="sidebar" id="sidebar">
+<!-- <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -255,7 +255,8 @@ $db->close();
                     <i class="fas fa-organization"></i><span class="nav-text">Alert</span>
                 </a>
     </div>
-</nav>
+</nav> -->
+  <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 

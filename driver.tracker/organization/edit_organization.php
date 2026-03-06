@@ -386,7 +386,7 @@ if (isset($_GET['logout'])) {
 <body>
 <div class="app-container">
 
-    <nav class="sidebar">
+    <!-- <nav class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -406,7 +406,8 @@ if (isset($_GET['logout'])) {
             <a href="children.php" class="nav-item"><i class="fas fa-child"></i> Children</a>
             <a href="alert.php" class="nav-item"><i class="fas fa-bell"></i> Alert</a>
         </div>
-    </nav>
+    </nav> -->
+      <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
     <div class="main-wrapper">
 

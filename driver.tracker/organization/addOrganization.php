@@ -177,7 +177,7 @@ textarea.form-control{resize:vertical;min-height:90px}
 </head>
 <body>
 <div class="app-container">
-<nav class="sidebar" id="sidebar">
+<!-- <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -197,7 +197,8 @@ textarea.form-control{resize:vertical;min-height:90px}
         <a href="children.php"  class="nav-item <?php echo isActivePage('children.php'); ?>"><i class="fas fa-user-circle"></i><span>Children</span></a>
         <a href="alert.php"     class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-bell"></i><span>Alert</span></a>
     </div>
-</nav>
+</nav> -->
+  <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="main-wrapper" id="mainWrapper">
     <header class="header">
