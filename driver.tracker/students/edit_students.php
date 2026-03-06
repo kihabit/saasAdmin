@@ -264,7 +264,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 <div class="app-container">
 
 <!-- SIDEBAR -->
-<nav class="sidebar" id="sidebar">
+<!-- <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -284,7 +284,8 @@ textarea.form-control{resize:vertical;min-height:80px}
         <a href="profile.php"   class="nav-item <?php echo isActivePage('profile.php'); ?>"><i class="fas fa-user-circle"></i><span>Profile</span></a>
         <a href="alert.php"     class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-bell"></i><span>Alert</span></a>
     </div>
-</nav>
+</nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- MAIN -->
@@ -294,14 +295,14 @@ textarea.form-control{resize:vertical;min-height:80px}
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="breadcrumb">
-                    <a href="dashboard.php">Home</a><i class="fas fa-chevron-right"></i>
-                    <a href="students.php">Children</a><i class="fas fa-chevron-right"></i>
-                    <a href="view_child.php?id=<?php echo $child_id; ?>"><?php echo htmlspecialchars($child['name']); ?></a><i class="fas fa-chevron-right"></i>
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a><i class="fas fa-chevron-right"></i>
+                    <a href="<?php echo BASE_URL;?>students/students.php">Children</a><i class="fas fa-chevron-right"></i>
+                    <a href="<?php echo BASE_URL;?>students/view_students.php?id=<?php echo $child_id; ?>"><?php echo htmlspecialchars($child['name']); ?></a><i class="fas fa-chevron-right"></i>
                     <span>Edit</span>
                 </div>
             </div>
             <div class="header-actions">
-                <a href="view_child.php?id=<?php echo $child_id; ?>" class="btn-back">
+                <a href="<?php echo BASE_URL;?>students/view_child.php?id=<?php echo $child_id; ?>" class="btn-back">
                     <i class="fas fa-arrow-left"></i><span>Back</span>
                 </a>
                 <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?')">

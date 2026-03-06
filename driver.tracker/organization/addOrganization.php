@@ -206,8 +206,8 @@ textarea.form-control{resize:vertical;min-height:90px}
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="breadcrumb">
-                    <a href="dashboard.php">Home</a><i class="fas fa-chevron-right"></i>
-                    <a href="organization.php">Organizations</a><i class="fas fa-chevron-right"></i>
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a><i class="fas fa-chevron-right"></i>
+                    <a href="<?php echo BASE_URL;?>organization/organization.php">Organizations</a><i class="fas fa-chevron-right"></i>
                     <span>Add Organization</span>
                 </div>
             </div>

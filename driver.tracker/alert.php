@@ -542,9 +542,9 @@ $db->close();
 </head>
 <body>
 <div class="app-container">
-
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <!-- <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -587,7 +587,7 @@ $db->close();
                 </a>
             </div>
         </div>
-    </nav>
+    </nav> -->
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -602,7 +602,7 @@ $db->close();
                         <i class="fas fa-bars"></i>
                     </button>
                     <div class="breadcrumb">
-                        <a href="dashboard.php">Home</a>
+                        <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                         <i class="fas fa-chevron-right"></i>
                         <span>Alerts</span>
                     </div>

@@ -326,7 +326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="app-container">
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <!-- <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo" onerror="this.style.display='none'">
@@ -346,8 +346,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="children.php" class="nav-item"><i class="fas fa-organization"></i><span>Children</span></a>
              <a href="alert.php" class="nav-item"><i class="fas fa-organization"></i><span>alert</span></a>
         </div> -->
-    </nav>
-
+    </nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="main-wrapper" id="mainWrapper">
@@ -356,15 +356,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                     <div class="breadcrumb">
-                        <a href="dashboard.php">Home</a>
+                        <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                         <i class="fas fa-chevron-right" style="font-size:10px"></i>
-                        <a href="users.php">Users</a>
+                        <a href="<?php echo BASE_URL;?>users.php">Users</a>
                         <i class="fas fa-chevron-right" style="font-size:10px"></i>
                         <span>Add User</span>
                     </div>
                 </div>
                 <div class="header-actions">
-                    <a href="users.php" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+                    <a href="<?php echo BASE_URL;?>users.php" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
                     <a href="?logout=1" class="logout-btn" onclick="return confirm('Logout?')">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>

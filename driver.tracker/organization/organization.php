@@ -266,7 +266,7 @@ $db->close();
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="breadcrumb">
-                    <a href="dashboard.php">Home</a>
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                     <i class="fas fa-chevron-right"></i>
                     <span>Organizations</span>
                 </div>

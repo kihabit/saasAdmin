@@ -1260,67 +1260,8 @@ $db->close();
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-<img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
-                    <h2>Organization Admin</h2>
-                </div>
-                <div class="sidebar-user">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($username, 0, 2)); ?>
-                    </div>
-                    <h3><?php echo htmlspecialchars($username); ?></h3>
-                    <p>ID: <?php echo htmlspecialchars($driver_id ?? 'N/A'); ?></p>
-                </div>
-            </div>
 
-           <div class="sidebar-nav">
-    <div class="nav-section">
-        <a href="dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>">
-            <i class="fas fa-tachometer-alt"></i>
-            <span class="nav-text">Dashboard</span>
-        </a>
-        
-        <a href="users.php" class="nav-item <?php echo isActivePage('users.php'); ?>">
-            <i class="fas fa-users"></i>
-            <span class="nav-text">Users</span>
-        </a>
-        
-        <!--<a href="completed_orders.php" class="nav-item <?php echo isActivePage('completed_orders.php'); ?>">-->
-        <!--    <i class="fas fa-check-circle"></i>-->
-        <!--    <span class="nav-text">Completed Orders</span>-->
-        <!--</a>-->
-        
-        <!--<a href="progress_orders.php" class="nav-item <?php echo isActivePage('progress_orders.php'); ?>">-->
-        <!--    <i class="fas fa-hourglass-half"></i>-->
-        <!--    <span class="nav-text">In-Progress Orders</span>-->
-        <!--</a>-->
-        
-        <a href="profile.php" class="nav-item <?php echo isActivePage('profile.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Profile</span>
-        </a>
-        
-     <a href="organization.php" class="nav-item <?php echo isActivePage('organization.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Organization</span>
-        </a>
-        
-         <a href="children.php" class="nav-item <?php echo isActivePage('children.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">children</span>
-        </a>
-        
-         <a href="alert.php" class="nav-item <?php echo isActivePage('alert.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Alert</span>
-        </a>
-        
-    </div>
-</div>
-        </nav>
-
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
         <!-- Sidebar Overlay for Mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -1334,7 +1275,7 @@ $db->close();
                             <i class="fas fa-bars"></i>
                         </button>
                         <div class="breadcrumb">
-                            <a href="dashboard.php">Home</a>
+                            <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                             <i class="fas fa-chevron-right"></i>
                             <span>Users</span>
                         </div>

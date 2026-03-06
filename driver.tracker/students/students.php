@@ -344,7 +344,7 @@ $db->close();
 <div class="app-container">
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <!-- <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -379,8 +379,8 @@ $db->close();
                 </a>
             </div>
         </div>
-    </nav>
-
+    </nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Main Wrapper -->
@@ -391,7 +391,7 @@ $db->close();
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                     <div class="breadcrumb">
-                        <a href="dashboard.php">Home</a>
+                        <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                         <i class="fas fa-chevron-right"></i>
                         <span>Student</span>
                     </div>

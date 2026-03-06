@@ -582,48 +582,7 @@ $db->close();
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                  <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
-                    <h2>Organization Admin</h2>
-                </div>
-                <div class="sidebar-user">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($logged_username, 0, 2)); ?>
-                    </div>
-                    <h3><?php echo htmlspecialchars($logged_username); ?></h3>
-                </div>
-            </div>
-
-            <div class="sidebar-nav">
-                <a href="dashboard.php" class="nav-item">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
-                </a>
-                <a href="users.php" class="nav-item active">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
-                <a href="profile.php" class="nav-item">
-                    <i class="fas fa-user-circle"></i>
-                    Profile
-                </a>
-                <a href="organization.php" class="nav-item">
-    <i class="fas fa-organization"></i>
-    Organization
-</a>
-<a href="children.php" class="nav-item">
-    <i class="fas fa-child"></i>
-    Children
-</a>
-
-<a href="alert.php" class="nav-item">
-    <i class="fas fa-child"></i>
-    alert
-</a>
-            </div>
-        </nav>
+       <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
         <!-- Main Wrapper -->
         <div class="main-wrapper">
@@ -631,14 +590,14 @@ $db->close();
             <header class="header">
                 <div class="header-content">
                     <div class="breadcrumb">
-                        <a href="dashboard.php">Home</a>
+                        <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                         <i class="fas fa-chevron-right"></i>
-                        <a href="users.php">Users</a>
+                        <a href="<?php echo BASE_URL;?>users.php">Users</a>
                         <i class="fas fa-chevron-right"></i>
                         <span><?php echo htmlspecialchars($user['username']); ?></span>
                     </div>
                     <div class="header-actions">
-                        <a href="users.php" class="btn-back">
+                        <a href="<?php echo BASE_URL;?>users.php" class="btn-back">
                             <i class="fas fa-arrow-left"></i>
                             Back to Users
                         </a>

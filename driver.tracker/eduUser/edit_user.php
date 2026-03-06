@@ -298,7 +298,7 @@ $db->close();
 </head>
 <body>
 <div class="app-container">
-    <nav class="sidebar">
+    <!-- <nav class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -317,20 +317,20 @@ $db->close();
             <a href="children.php" class="nav-item"><i class="fas fa-child"></i>Children</a>
              <a href="alert.php" class="nav-item"><i class="fas fa-child"></i>Alert</a>
         </div>
-    </nav>
-
+    </nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
     <div class="main-wrapper">
         <header class="header">
             <div class="header-content">
                 <div class="breadcrumb">
-                    <a href="dashboard.php">Home</a>
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                     <i class="fas fa-chevron-right"></i>
-                    <a href="users.php">Users</a>
+                    <a href="<?php echo BASE_URL;?>users.php">Users</a>
                     <i class="fas fa-chevron-right"></i>
                     <span>Edit <?php echo htmlspecialchars($user['username']); ?></span>
                 </div>
                 <div class="header-actions">
-                    <a href="users.php" class="btn-back"><i class="fas fa-arrow-left"></i>Back to Users</a>
+                    <a href="<?php echo BASE_URL;?>users.php" class="btn-back"><i class="fas fa-arrow-left"></i>Back to Users</a>
                     <a href="?logout=1" class="logout-btn" onclick="return confirm('Logout?')"><i class="fas fa-sign-out-alt"></i>Logout</a>
                 </div>
             </div>

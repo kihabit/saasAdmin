@@ -437,14 +437,14 @@ $db->close();
             <header class="header">
                 <div class="header-content">
                     <div class="breadcrumb">
-                        <a href="dashboard.php">Home</a>
+                        <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                         <i class="fas fa-chevron-right"></i>
-                        <a href="organization.php">Organizations</a>
+                        <a href="<?php echo BASE_URL;?>organization/organization.php">Organizations</a>
                         <i class="fas fa-chevron-right"></i>
                         <span><?php echo htmlspecialchars($organization['name']); ?></span>
                     </div>
                     <div class="header-actions">
-                        <a href="organization.php" class="btn-back">
+                        <a href="<?php echo BASE_URL;?>organization/organization.php" class="btn-back">
                             <i class="fas fa-arrow-left"></i>
                             Back to Organizations
                         </a>

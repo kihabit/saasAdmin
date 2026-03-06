@@ -422,7 +422,7 @@ try {
 <div class="app-container">
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <!-- <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo" onerror="this.style.display='none'">
@@ -442,8 +442,8 @@ try {
             <a href="children.php" class="nav-item"><i class="fas fa-organization"></i><span>Children</span></a>
              <a href="alert.php" class="nav-item"><i class="fas fa-organization"></i><span>alert</span></a>
         </div>
-    </nav>
-
+    </nav> -->
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="main-wrapper" id="mainWrapper">

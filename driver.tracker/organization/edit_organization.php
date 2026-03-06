@@ -32,6 +32,10 @@ $edit_school_id = intval($_GET['id']);
 $organization = null;
 try {
     $stmt = $conn->prepare("SELECT id, org_id, industry_id, name, address, city, state, postal_code, phone, email, latitude, longitude, created_at FROM organization WHERE id = ?");
+    if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+    }
+
     $stmt->bind_param("i", $edit_school_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -414,9 +418,9 @@ if (isset($_GET['logout'])) {
         <header class="header">
             <div class="header-content">
                 <div class="breadcrumb">
-                    <a href="dashboard.php">Home</a>
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                     <i class="fas fa-chevron-right"></i>
-                    <a href="organization.php">Organizations</a>
+                    <a href="<?php echo BASE_URL;?>organization/organization.php">Organizations</a>
                     <i class="fas fa-chevron-right"></i>
                     <a href="view-organization.php?id=<?php echo $edit_school_id; ?>"><?php echo htmlspecialchars($organization['name']); ?></a>
                     <i class="fas fa-chevron-right"></i>

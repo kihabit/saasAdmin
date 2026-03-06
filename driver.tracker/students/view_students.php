@@ -196,7 +196,7 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
 <div class="app-container">
 
 <!-- ═══ SIDEBAR ═══ -->
-<nav class="sidebar" id="sidebar">
+<!-- <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
@@ -216,7 +216,8 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
         <a href="profile.php"   class="nav-item <?php echo isActivePage('profile.php'); ?>"><i class="fas fa-user-circle"></i><span>Profile</span></a>
         <a href="alert.php"     class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-bell"></i><span>Alert</span></a>
     </div>
-</nav>
+</nav> -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- ═══ MAIN WRAPPER ═══ -->
