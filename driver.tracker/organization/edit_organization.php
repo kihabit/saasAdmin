@@ -31,12 +31,15 @@ $edit_school_id = intval($_GET['id']);
 
 $organization = null;
 try {
-    $stmt = $conn->prepare("SELECT id, name, address, city, state, postal_code, phone, email, latitude, longitude, created_at FROM organization WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, org_id, industry_id, name, address, city, state, postal_code, phone, email, latitude, longitude, created_at FROM organization WHERE id = ?");
     $stmt->bind_param("i", $edit_school_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $organization = $result->fetch_assoc();
     $stmt->close();
+
+    // Current industry id set karo selected option ke liye
+    $current_industry_id = $organization['industry_id'] ?? 0;
 
     if (!$organization) {
         setFlashMessage('error', 'Organization not found.');
@@ -54,6 +57,8 @@ $messageType = '';
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_school'])) {
     $name        = trim($_POST['name'] ?? '');
+    $org_id      = strtoupper(trim($_POST['org_id'] ?? ''));
+    $industry_id = intval($_POST['industry_id'] ?? 0);
     $address     = trim($_POST['address'] ?? '');
     $city        = trim($_POST['city'] ?? '');
     $state       = trim($_POST['state'] ?? '');
@@ -66,12 +71,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_school'])) {
     if (empty($name)) {
         $message = 'Organization name is required.';
         $messageType = 'error';
+    } elseif (empty($org_id)) {
+        $message = 'Org ID is required.';
+        $messageType = 'error';
+    } elseif (!preg_match('/^[A-Z]{3}[0-9]{3}$/', $org_id)) {
+        $message = 'Org ID format galat hai (e.g. DPS001 — 3 letters + 3 numbers).';
+        $messageType = 'error';
+    } elseif (empty($industry_id)) {
+        $message = 'Industry is required.';
+        $messageType = 'error';
     } else {
         try {
-            $stmt = $conn->prepare("UPDATE organization SET name=?, address=?, city=?, state=?, postal_code=?, phone=?, email=?, latitude=?, longitude=? WHERE id=?");
             $lat = $latitude !== '' ? (float)$latitude : null;
             $lng = $longitude !== '' ? (float)$longitude : null;
-            $stmt->bind_param("sssssssddi", $name, $address, $city, $state, $postal_code, $phone, $email, $lat, $lng, $edit_school_id);
+
+            $stmt = $conn->prepare("UPDATE organization SET name=?, org_id=?, industry_id=?, address=?, city=?, state=?, postal_code=?, phone=?, email=?, latitude=?, longitude=? WHERE id=?");
+            $stmt->bind_param("ssissssssddi", $name, $org_id, $industry_id, $address, $city, $state, $postal_code, $phone, $email, $lat, $lng, $edit_school_id);
             $stmt->execute();
             $stmt->close();
 
@@ -86,9 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_school'])) {
         }
     }
 
-    // Update local $organization array to reflect entered values on error
+    // Error hone par entered values wapas dikhao
     if ($messageType === 'error') {
         $organization['name']        = $name;
+        $organization['org_id']      = $org_id;
+        $organization['industry_id'] = $industry_id;
         $organization['address']     = $address;
         $organization['city']        = $city;
         $organization['state']       = $state;
@@ -97,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_school'])) {
         $organization['email']       = $email;
         $organization['latitude']    = $latitude;
         $organization['longitude']   = $longitude;
+        $current_industry_id         = $industry_id;
     }
 }
 
@@ -118,7 +136,7 @@ if (isset($_GET['logout'])) {
     redirect(LOGIN_PAGE);
 }
 
-$db->close();
+//$db->close();
 ?>
 
 <!DOCTYPE html>
@@ -142,7 +160,6 @@ $db->close();
 
         .app-container { display: flex; min-height: 100vh; }
 
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -171,7 +188,6 @@ $db->close();
             padding: 1rem;
             background: rgba(255,255,255,0.1);
             border-radius: 12px;
-            backdrop-filter: blur(10px);
         }
 
         .sidebar-user .user-avatar {
@@ -204,10 +220,8 @@ $db->close();
 
         .nav-item i { width: 20px; text-align: center; }
 
-        /* Main Wrapper */
         .main-wrapper { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
 
-        /* Header */
         .header {
             background: white;
             border-bottom: 1px solid #e2e8f0;
@@ -245,10 +259,8 @@ $db->close();
 
         .logout-btn:hover { background: #c82333; }
 
-        /* Main Content */
         .main-content { padding: 2rem; }
 
-        /* Message */
         .message-container { margin-bottom: 1.5rem; }
         .message {
             padding: 1rem 1.5rem; border-radius: 12px;
@@ -258,7 +270,6 @@ $db->close();
         .message.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .message.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-        /* Form Card */
         .form-card {
             background: white;
             border-radius: 16px;
@@ -295,7 +306,6 @@ $db->close();
         }
 
         .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-
         .form-group.full-width { grid-column: 1 / -1; }
 
         .form-label {
@@ -314,6 +324,7 @@ $db->close();
             color: #1a202c;
             background: #f8fafc;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .form-input:focus {
@@ -357,7 +368,6 @@ $db->close();
 
         .btn-save:hover { background: #0000CC; transform: translateY(-1px); }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .sidebar { transform: translateX(-100%); }
             .main-wrapper { margin-left: 0; }
@@ -376,7 +386,6 @@ $db->close();
 <body>
 <div class="app-container">
 
-    <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
@@ -384,40 +393,23 @@ $db->close();
                 <h2>Organization Admin</h2>
             </div>
             <div class="sidebar-user">
-                <div class="user-avatar">
-                    <?php echo strtoupper(substr($logged_username, 0, 2)); ?>
-                </div>
+                <div class="user-avatar"><?php echo strtoupper(substr($logged_username, 0, 2)); ?></div>
                 <h3><?php echo htmlspecialchars($logged_username); ?></h3>
             </div>
         </div>
 
         <div class="sidebar-nav">
-            <a href="dashboard.php" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="users.php" class="nav-item">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="profile.php" class="nav-item">
-                <i class="fas fa-user-circle"></i> Profile
-            </a>
-            <a href="organization.php" class="nav-item active">
-                <i class="fas fa-organization"></i> Organization
-            </a>
-            <a href="children.php" class="nav-item">
-                <i class="fas fa-child"></i> Children
-            </a>
-            
-             <a href="alert.php" class="nav-item">
-                <i class="fas fa-child"></i> Alert
-            </a>
+            <a href="dashboard.php" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="users.php" class="nav-item"><i class="fas fa-users"></i> Users</a>
+            <a href="profile.php" class="nav-item"><i class="fas fa-user-circle"></i> Profile</a>
+            <a href="organization.php" class="nav-item active"><i class="fas fa-building"></i> Organization</a>
+            <a href="children.php" class="nav-item"><i class="fas fa-child"></i> Children</a>
+            <a href="alert.php" class="nav-item"><i class="fas fa-bell"></i> Alert</a>
         </div>
     </nav>
 
-    <!-- Main Wrapper -->
     <div class="main-wrapper">
 
-        <!-- Header -->
         <header class="header">
             <div class="header-content">
                 <div class="breadcrumb">
@@ -431,18 +423,15 @@ $db->close();
                 </div>
                 <div class="header-actions">
                     <a href="view-organization.php?id=<?php echo $edit_school_id; ?>" class="btn-back">
-                        <i class="fas fa-arrow-left"></i>
-                        Back to Organization
+                        <i class="fas fa-arrow-left"></i> Back to Organization
                     </a>
                     <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?')">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
 
             <?php if ($message): ?>
@@ -467,15 +456,17 @@ $db->close();
                     <form method="POST">
                         <div class="form-grid">
 
+                            <!-- Organization Name -->
                             <div class="form-group full-width">
                                 <label class="form-label">
-                                    <i class="fas fa-organization"></i> Organization Name <span style="color:#dc2626;">*</span>
+                                    <i class="fas fa-building"></i> Organization Name <span style="color:#dc2626;">*</span>
                                 </label>
                                 <input type="text" name="name" class="form-input"
                                     value="<?php echo htmlspecialchars($organization['name']); ?>"
                                     placeholder="Enter organization name" required>
                             </div>
 
+                            <!-- Address -->
                             <div class="form-group full-width">
                                 <label class="form-label">
                                     <i class="fas fa-map-marker-alt"></i> Address
@@ -484,27 +475,41 @@ $db->close();
                                     value="<?php echo htmlspecialchars($organization['address'] ?? ''); ?>"
                                     placeholder="Enter full address">
                             </div>
-                            <div class="form-group">
-                        <label>
-                            <i class="fas fa-industry" style="color:#0000FF;font-size:.85rem;"></i> 
-                            Industry Type <span class="req">*</span>
-                        </label>
-                        <?php
-                        $stmt = $conn->prepare("SELECT id, name FROM industries");
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        ?>
 
-                        <select name="industry_id" class="form-control" required>
-                            <option value="">Select Industry</option>
-                            <?php while($row = $result->fetch_assoc()): ?>
-                                 <option value="<?= $row['id']; ?>"
-                                    <?= ($current_industry_id == $row['id']) ? 'selected' : ''; ?>>
-                                    <?= htmlspecialchars($row['name']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
+                            <!-- Industry Type -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-industry"></i> Industry Type <span style="color:#dc2626;">*</span>
+                                </label>
+                                <?php
+                                $stmt = $conn->prepare("SELECT id, name FROM industries");
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                ?>
+                                <select name="industry_id" class="form-input" required>
+                                    <option value="">Select Industry</option>
+                                    <?php while($row = $result->fetch_assoc()): ?>
+                                        <option value="<?= $row['id']; ?>"
+                                            <?= ($current_industry_id == $row['id']) ? 'selected' : ''; ?>>
+                                            <?= htmlspecialchars($row['name']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+
+                            <!-- Org ID -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-id-badge"></i> Org ID <span style="color:#dc2626;">*</span>
+                                </label>
+                                <input type="text" name="org_id" class="form-input"
+                                    value="<?php echo htmlspecialchars($organization['org_id'] ?? ''); ?>"
+                                    maxlength="6"
+                                    style="text-transform:uppercase;letter-spacing:2px;font-weight:600;"
+                                    placeholder="e.g. DPS001" required>
+                            </div>
+
+                            <!-- City -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-city"></i> City
@@ -514,6 +519,7 @@ $db->close();
                                     placeholder="Enter city">
                             </div>
 
+                            <!-- State -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-map"></i> State
@@ -523,6 +529,7 @@ $db->close();
                                     placeholder="Enter state">
                             </div>
 
+                            <!-- Postal Code -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-mail-bulk"></i> Postal Code
@@ -532,6 +539,7 @@ $db->close();
                                     placeholder="Enter postal code">
                             </div>
 
+                            <!-- Phone -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-phone"></i> Phone
@@ -541,6 +549,7 @@ $db->close();
                                     placeholder="Enter phone number">
                             </div>
 
+                            <!-- Email -->
                             <div class="form-group full-width">
                                 <label class="form-label">
                                     <i class="fas fa-envelope"></i> Email
@@ -550,22 +559,24 @@ $db->close();
                                     placeholder="Enter email address">
                             </div>
 
+                            <!-- Latitude -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-map-pin"></i> Latitude
                                 </label>
                                 <input type="number" step="any" name="latitude" class="form-input"
                                     value="<?php echo htmlspecialchars($organization['latitude'] ?? ''); ?>"
-                                    placeholder="e.g. 40.712776">
+                                    placeholder="e.g. 28.61234567">
                             </div>
 
+                            <!-- Longitude -->
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-map-pin"></i> Longitude
                                 </label>
                                 <input type="number" step="any" name="longitude" class="form-input"
                                     value="<?php echo htmlspecialchars($organization['longitude'] ?? ''); ?>"
-                                    placeholder="e.g. -74.005974">
+                                    placeholder="e.g. 77.20890123">
                             </div>
 
                         </div>

@@ -16,11 +16,12 @@ $username = $_SESSION['username'] ?? '';
 $driver_id = $_SESSION['driver_id'] ?? null;
 
 $errors = [];
-$name = $address = $city = $state = $postal_code = $phone = $email = $latitude = $longitude = '';
+$name = $address = $city = $state = $postal_code = $phone = $email = $latitude = $longitude = $org_id = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = trim($_POST['name']        ?? '');
-    $industry_id        = trim($_POST['industry_id']        ?? '');
+    $industry_id = trim($_POST['industry_id'] ?? '');
+    $org_id      = strtoupper(trim($_POST['org_id'] ?? ''));
     $address     = trim($_POST['address']     ?? '');
     $city        = trim($_POST['city']        ?? '');
     $state       = trim($_POST['state']       ?? '');
@@ -30,11 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $latitude    = trim($_POST['latitude']    ?? '');
     $longitude   = trim($_POST['longitude']   ?? '');
 
-    if (empty($name))    $errors[] = 'Organization name is required.';
-     if (empty($industry_id))    $errors[] = 'Industry is required.';
-    if (empty($address)) $errors[] = 'Address is required.';
-    if (empty($city))    $errors[] = 'City is required.';
-    if (empty($state))   $errors[] = 'State is required.';
+    if (empty($name))        $errors[] = 'Organization name is required.';
+    if (empty($industry_id)) $errors[] = 'Industry is required.';
+    if (empty($org_id))      $errors[] = 'Org ID is required.';
+    if (!empty($org_id) && !preg_match('/^[A-Z]{3}[0-9]{3}$/', $org_id))
+        $errors[] = 'Org ID format galat hai (e.g. DPS001 — 3 letters + 3 numbers).';
+    if (empty($address))     $errors[] = 'Address is required.';
+    if (empty($city))        $errors[] = 'City is required.';
+    if (empty($state))       $errors[] = 'State is required.';
     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL))
         $errors[] = 'Please enter a valid email address.';
     if (!empty($latitude) && !is_numeric($latitude))
@@ -44,43 +48,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-           $stmt = $conn->prepare("INSERT INTO organization 
-(name, industry_id, address, city, state, postal_code, phone, email, latitude, longitude) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO organization 
+(name, industry_id, org_id, address, city, state, postal_code, phone, email, latitude, longitude) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-                if (!$stmt) {
-                    die("Prepare failed: " . $conn->error);
-                }
+            if (!$stmt) {
+                die("Prepare failed: " . $conn->error);
+            }
 
-                $stmt->bind_param(
-                    'sissssssss', 
-                    $name, 
-                    $industry_id,  
-                    $address, 
-                    $city, 
-                    $state, 
-                    $postal_code, 
-                    $phone, 
-                    $email, 
-                    $latitude, 
-                    $longitude
-                );
+            $stmt->bind_param(
+                'sisssssssss',
+                $name,
+                $industry_id,
+                $org_id,
+                $address,
+                $city,
+                $state,
+                $postal_code,
+                $phone,
+                $email,
+                $latitude,
+                $longitude
+            );
 
-                if (!$stmt->execute()) {
-                    die("Execute failed: " . $stmt->error);
-                }
+            if (!$stmt->execute()) {
+                die("Execute failed: " . $stmt->error);
+            }
 
-                echo "Insert successful!";
-                $stmt->close();
+            echo "Insert successful!";
+            $stmt->close();
         } catch (Exception $e) {
-            logAppError("addSchool: " . $e->getMessage());
+            logAppError("addOrganization: " . $e->getMessage());
             $errors[] = 'Error saving organization. Please try again.';
         }
     }
 }
 
 if (isset($_GET['logout'])) { session_unset(); session_destroy(); redirect(LOGIN_PAGE); }
-//$db->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -158,6 +162,7 @@ textarea.form-control{resize:vertical;min-height:90px}
 .autofill-btn:hover{background:#0000CC}
 .autofill-btn:disabled{background:#94a3b8;cursor:not-allowed}
 .manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;color:#059669;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+
 @media(max-width:1024px){
     .sidebar{transform:translateX(-100%)}.sidebar.active{transform:translateX(0)}
     .main-wrapper{margin-left:0}.menu-toggle{display:block}
@@ -187,10 +192,10 @@ textarea.form-control{resize:vertical;min-height:90px}
     <div class="sidebar-nav">
         <a href="dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
         <a href="users.php"     class="nav-item <?php echo isActivePage('users.php'); ?>"><i class="fas fa-users"></i><span>Users</span></a>
-        <a href="organization.php"    class="nav-item <?php echo isActivePage('organization.php'); ?>"><i class="fas fa-organization"></i><span>Organizations</span></a>
+        <a href="organization.php" class="nav-item <?php echo isActivePage('organization.php'); ?>"><i class="fas fa-building"></i><span>Organizations</span></a>
         <a href="profile.php"   class="nav-item <?php echo isActivePage('profile.php'); ?>"><i class="fas fa-user-circle"></i><span>Profile</span></a>
-        <a href="children.php"   class="nav-item <?php echo isActivePage('children.php'); ?>"><i class="fas fa-user-circle"></i><span>Children</span></a>
-          <a href="alert.php"   class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-user-circle"></i><span>Alert</span></a>
+        <a href="children.php"  class="nav-item <?php echo isActivePage('children.php'); ?>"><i class="fas fa-user-circle"></i><span>Children</span></a>
+        <a href="alert.php"     class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-bell"></i><span>Alert</span></a>
     </div>
 </nav>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -228,7 +233,7 @@ textarea.form-control{resize:vertical;min-height:90px}
 
         <div class="form-card">
             <div class="form-card-header">
-                <h3 class="form-card-title"><i class="fas fa-organization" style="color:#0000FF;"></i> Organization Information</h3>
+                <h3 class="form-card-title"><i class="fas fa-building" style="color:#0000FF;"></i> Organization Information</h3>
             </div>
             <div class="form-body">
                 <form method="POST" action="addOrganization.php">
@@ -236,36 +241,57 @@ textarea.form-control{resize:vertical;min-height:90px}
 
                         <div class="section-label">Basic Information</div>
 
+                        <!-- Organization Name -->
                         <div class="form-group full-width">
-                            <label><i class="fas fa-organization" style="color:#0000FF;font-size:.85rem;"></i> Organization Name <span class="req">*</span></label>
-                            <input type="text" name="name" class="form-control" placeholder="e.g. Delhi Public Organization" value="<?php echo htmlspecialchars($name); ?>" required>
+                            <label><i class="fas fa-building" style="color:#0000FF;font-size:.85rem;"></i> Organization Name <span class="req">*</span></label>
+                            <input type="text" name="name" id="nameField" class="form-control"
+                                   placeholder="e.g. Delhi Public School"
+                                   value="<?php echo htmlspecialchars($name); ?>" required>
                         </div>
 
+                        <!-- Address -->
                         <div class="form-group full-width">
                             <label><i class="fas fa-map-marker-alt" style="color:#0000FF;font-size:.85rem;"></i> Address <span class="req">*</span></label>
                             <textarea id="addressField" name="address" class="form-control" placeholder="Enter full street address"><?php echo htmlspecialchars($address); ?></textarea>
                             <div class="geocode-status" id="geocodeStatus"></div>
                         </div>
-                        <div class="form-group">
-                        <label>
-                            <i class="fas fa-industry" style="color:#0000FF;font-size:.85rem;"></i> 
-                            Industry Type <span class="req">*</span>
-                        </label>
-                        <?php
-                        $stmt = $conn->prepare("SELECT id, name FROM industries");
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        ?>
 
-                        <select name="industry_id" class="form-control" required>
-                            <option value="">Select Industry</option>
-                            <?php while($row = $result->fetch_assoc()): ?>
-                                <option value="<?= $row['id']; ?>">
-                                    <?= htmlspecialchars($row['name']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
+                        <!-- Industry Type -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-industry" style="color:#0000FF;font-size:.85rem;"></i>
+                                Industry Type <span class="req">*</span>
+                            </label>
+                            <?php
+                            $stmt = $conn->prepare("SELECT id, name FROM industries");
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            ?>
+                            <select name="industry_id" class="form-control" required>
+                                <option value="">Select Industry</option>
+                                <?php while($row = $result->fetch_assoc()): ?>
+                                    <option value="<?= $row['id']; ?>" <?= (isset($industry_id) && $industry_id == $row['id']) ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($row['name']); ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+
+                        <!-- ===== ORG ID FIELD ===== -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-id-badge" style="color:#0000FF;font-size:.85rem;"></i>
+                                Org ID <span class="req">*</span>
+                            </label>
+                            <input type="text" name="org_id" id="orgIdField" class="form-control"
+                                   placeholder="e.g. DPS001"
+                                   value="<?php echo htmlspecialchars($org_id); ?>"
+                                   maxlength="6"
+                                   style="text-transform:uppercase;letter-spacing:2px;font-weight:600;"
+                                   required>
+                            <span class="hint">Auto-generated</span>
+                        </div>
+                        <!-- ===== END ORG ID ===== -->
 
                         <div class="section-label">Location</div>
 
@@ -363,18 +389,41 @@ menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active');
 sidebarOverlay.addEventListener('click', () => { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); });
 window.addEventListener('resize', () => { if (window.innerWidth > 1024) { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); } });
 
+// ===== ORG ID AUTO-GENERATE =====
+document.getElementById('nameField').addEventListener('blur', function () {
+    const orgIdField = document.getElementById('orgIdField');
+    
+    if (orgIdField.value.trim() !== '') return;
+
+    const name = this.value.trim();
+    if (!name) return;
+
+    // 3-letter prefix banana — har word ka pehla letter
+    const words = name.split(/\s+/);
+    let prefix = words.map(w => w[0] ? w[0].toUpperCase() : '').join('').substring(0, 3);
+    prefix = prefix.padEnd(3, 'X'); // agar 3 se kam words hain
+
+    // Random 3-digit number (user baad mein edit kar sakta hai)
+    const num = String(Math.floor(Math.random() * 900) + 100);
+    orgIdField.value = prefix + num;
+});
+
+// OrgId manually type karne par uppercase enforce karo
+document.getElementById('orgIdField').addEventListener('input', function () {
+    this.value = this.value.toUpperCase();
+});
+// ===== END ORG ID =====
+
 function showStatus(type, msg) {
     const el = document.getElementById('geocodeStatus');
     el.className = 'geocode-status ' + type;
     el.innerHTML = msg;
 }
 
-// Jab user manually kuch type kare — badge dikhao
 function onManualCoordInput() {
     document.getElementById('manualBadge').style.display = 'inline-flex';
 }
 
-// X button se field clear karo
 function clearCoord(field) {
     document.getElementById(field + 'Field').value = '';
     const lat = document.getElementById('latitudeField').value.trim();
@@ -385,7 +434,6 @@ function clearCoord(field) {
     }
 }
 
-// Auto-fill button se geocode karo
 function fetchCoordinates() {
     const address = document.getElementById('addressField').value.trim();
     const city    = document.getElementById('cityField').value.trim();
@@ -417,7 +465,7 @@ function fetchCoordinates() {
             document.getElementById('latitudeField').value  = lat;
             document.getElementById('longitudeField').value = lon;
             document.getElementById('manualBadge').style.display = 'none';
-            showStatus('success', '<i class="fas fa-check-circle"></i>&nbsp; Coordinates Coorected: ' + lat + ', ' + lon);
+            showStatus('success', '<i class="fas fa-check-circle"></i>&nbsp; Coordinates found: ' + lat + ', ' + lon);
         } else {
             document.getElementById('latitudeField').value  = '';
             document.getElementById('longitudeField').value = '';

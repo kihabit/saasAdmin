@@ -342,7 +342,7 @@ $db->close();
                             <a href="view-organization.php?id=<?php echo (int)$sc['id']; ?>" class="btn-sm btn-view">
                                 <i class="fas fa-eye"></i> View
                             </a>
-                            <a href="edit_school.php?id=<?php echo (int)$sc['id']; ?>" class="btn-sm btn-edit">
+                            <a href="edit_organization.php?id=<?php echo (int)$sc['id']; ?>" class="btn-sm btn-edit">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
                             <button class="btn-sm btn-delete"

@@ -39,7 +39,7 @@ $view_school_id = intval($_GET['id']);
 // Fetch organization details
 $organization = null;
 try {
-    $stmt = $conn->prepare("SELECT id, name, address, city, state, postal_code, phone, email, latitude, longitude, created_at FROM organization WHERE id = ?");
+   $stmt = $conn->prepare("SELECT id, org_id, name, address, city, state, postal_code, phone, email, latitude, longitude, created_at FROM organization WHERE id = ?");
     $stmt->bind_param("i", $view_school_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -476,13 +476,16 @@ $db->close();
                     <div class="profile-body">
                         <div class="info-grid">
 
-                            <div class="info-item">
-                                <div class="info-label">
-                                    <i class="fas fa-id-badge"></i>
-                                    Organization ID
-                                </div>
-                                <div class="info-value">#<?php echo htmlspecialchars($organization['id']); ?></div>
-                            </div>
+                          <div class="info-item">
+    <div class="info-label">
+        <i class="fas fa-id-badge"></i>
+        Organization ID
+    </div>
+    <div class="info-value">
+        <?php echo htmlspecialchars($organization['org_id'] ?? 'N/A'); ?>
+        <span style="color:#9ca3af;font-size:.85rem;margin-left:6px;">(#<?php echo $organization['id']; ?>)</span>
+    </div>
+</div>
 
                             <div class="info-item">
                                 <div class="info-label">
