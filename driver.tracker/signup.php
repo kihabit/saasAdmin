@@ -96,7 +96,7 @@ try {
 
         // 20 params — types: 11 strings, 1 int (userType), 3 strings, 1 string (created_at), 2 strings (lat/lng), 1 int (school_id), 1 string (school_name)
         $stmt->bind_param(
-            "sssssssssssississsis",
+           "sssssssssssisssssiss",
             $driverId,        // s1
             $data['username'],// s2
             $data['firstName'],// s3

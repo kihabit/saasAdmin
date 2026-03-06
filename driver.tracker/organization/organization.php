@@ -288,7 +288,7 @@ $db->close();
         <div class="schools-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-building"></i> All Organizations</h3>
-                <span class="schools-count"><?php echo number_format($filteredTotal); ?> schools</span>
+               <!-- <span class="schools-count"><?php echo number_format($filteredTotal); ?> schools</span> -->
             </div>
 
             <?php if ($schools): ?>
