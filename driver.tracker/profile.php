@@ -192,7 +192,7 @@ $db->close();
         }
 
         /* Sidebar Styles */
-        .sidebar {
+        /* .sidebar {
             width: 280px;
             background: white;
             border-right: 1px solid #e2e8f0;
@@ -214,9 +214,9 @@ $db->close();
             border-bottom: 1px solid #e2e8f0;
             background: linear-gradient(135deg, #0000FF, #4169E1);
             color: white;
-        }
+        } */
 
-        .sidebar-logo {
+        /* .sidebar-logo {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -293,14 +293,14 @@ $db->close();
             width: 20px;
             text-align: center;
             font-size: 1.1rem;
-        }
+        } */
 
         /* Main Wrapper */
-        .main-wrapper {
+        /* .main-wrapper {
             flex: 1;
             margin-left: 280px;
             transition: margin-left 0.3s ease;
-        }
+        } */
 
         .main-wrapper.expanded {
             margin-left: 0;
@@ -415,18 +415,17 @@ $db->close();
 
         /* Main Content */
         .main-content {
-            padding: 2rem;
-            max-width: 1200px;
+            padding: 1rem;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
         .page-header {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .page-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 1rem;
             color: #1a202c;
             margin-bottom: 0.5rem;
         }
@@ -466,8 +465,8 @@ $db->close();
         /* Profile Grid */
         .profile-grid {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
+            grid-template-columns: 250px 1fr;
+            gap: 1rem;
         }
 
         /* Profile Card */
@@ -481,14 +480,14 @@ $db->close();
 
         .profile-header {
             background: linear-gradient(135deg, #0000FF, #4169E1);
-            padding: 2rem;
+           padding: 5px;
             text-align: center;
             color: white;
         }
 
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
             display: flex;
@@ -515,7 +514,7 @@ $db->close();
         }
 
         .info-item {
-            padding: 1rem 0;
+            padding: .25rem 0;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
@@ -570,17 +569,17 @@ $db->close();
             background: white;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            padding: 2rem;
+            padding: 15px;
         }
 
         .card-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
             border-bottom: 2px solid #e2e8f0;
         }
 
         .card-header h3 {
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #1a202c;
             display: flex;
@@ -600,11 +599,11 @@ $db->close();
         }
 
         .form-section {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .section-title {
-            font-size: 1.1rem;
+            font-size: .8rem;
             font-weight: 600;
             color: #1a202c;
             margin-bottom: 1rem;
@@ -616,24 +615,24 @@ $db->close();
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: .5rem;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: .8rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             font-weight: 600;
             color: #4a5568;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 4px 9px;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             font-size: 0.95rem;
@@ -712,12 +711,13 @@ $db->close();
             background: #fef3c7;
             border: 1px solid #fbbf24;
             border-radius: 12px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 4px 4px;
+            margin-bottom: .8rem;
             display: flex;
             align-items: center;
             gap: 12px;
             color: #92400e;
+            font-size: 10px;
         }
 
         .alert-box i {
@@ -792,68 +792,8 @@ $db->close();
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
-                    <h2>Organization Admin</h2>
-                </div>
-                <div class="sidebar-user">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($username, 0, 2)); ?>
-                    </div>
-                    <h3><?php echo htmlspecialchars($username); ?></h3>
-                    <p>ID: <?php echo htmlspecialchars($driver_id ?? 'N/A'); ?></p>
-                </div>
-            </div>
-
-       <div class="sidebar-nav">
-    <div class="nav-section">
-        <a href="dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>">
-            <i class="fas fa-tachometer-alt"></i>
-            <span class="nav-text">Dashboard</span>
-        </a>
         
-        <a href="users.php" class="nav-item <?php echo isActivePage('users.php'); ?>">
-            <i class="fas fa-users"></i>
-            <span class="nav-text">Users</span>
-        </a>
-        
-        <!--<a href="completed_orders.php" class="nav-item <?php echo isActivePage('completed_orders.php'); ?>">-->
-        <!--    <i class="fas fa-check-circle"></i>-->
-        <!--    <span class="nav-text">Completed Orders</span>-->
-        <!--</a>-->
-        
-        <!--<a href="progress_orders.php" class="nav-item <?php echo isActivePage('progress_orders.php'); ?>">-->
-        <!--    <i class="fas fa-hourglass-half"></i>-->
-        <!--    <span class="nav-text">In-Progress Orders</span>-->
-        <!--</a>-->
-        
-        <a href="profile.php" class="nav-item <?php echo isActivePage('profile.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Profile</span>
-            
-             <a href="organization.php" class="nav-item <?php echo isActivePage('organization.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Organization</span>
-            
-             <a href="children.php" class="nav-item <?php echo isActivePage('children.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">children</span>
-        </a>
-        
-         <a href="alert.php" class="nav-item <?php echo isActivePage('alert.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Alert</span>
-        </a>
-        
-        </a>
-        </a>
-    </div>
-</div>
-        </nav>
-
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
         <!-- Sidebar Overlay -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -867,7 +807,7 @@ $db->close();
                             <i class="fas fa-bars"></i>
                         </button>
                         <div class="breadcrumb">
-                            <a href="dashboard.php">Home</a>
+                            <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                             <i class="fas fa-chevron-right"></i>
                             <span>Profile</span>
                         </div>
@@ -898,17 +838,17 @@ $db->close();
                 <?php endif; ?>
 
                 <!-- Page Header -->
-                <div class="page-header">
-                    <h1>My Profile</h1>
+                <!-- <div class="page-header">
+                    <h4>My Profile</h4>
                     <p>Manage your account information and settings</p>
-                </div>
+                </div> -->
 
                 <!-- Profile Grid -->
                 <div class="profile-grid">
                     <!-- Profile Card -->
                     <div class="profile-card">
                         <div class="profile-header">
-                            <div class="profile-avatar">
+                            <!-- <div class="profile-avatar">
                                 <?php 
                                 if (!empty($userData['firstName']) && !empty($userData['lastName'])) {
                                     echo strtoupper(substr($userData['firstName'], 0, 1) . substr($userData['lastName'], 0, 1));
@@ -916,8 +856,8 @@ $db->close();
                                     echo strtoupper(substr($username, 0, 2));
                                 }
                                 ?>
-                            </div>
-                            <h2>
+                            </div> -->
+                            <h4>
                                 <?php 
                                 if (!empty($userData['firstName']) && !empty($userData['lastName'])) {
                                     echo htmlspecialchars($userData['firstName'] . ' ' . $userData['lastName']);
@@ -925,7 +865,7 @@ $db->close();
                                     echo htmlspecialchars($username);
                                 }
                                 ?>
-                            </h2>
+                            </h4>
                             <p>@<?php echo htmlspecialchars($username); ?></p>
                         </div>
 
@@ -998,7 +938,7 @@ $db->close();
                         <form method="POST" action="profile.php">
                             <!-- Basic Information -->
                             <div class="form-section">
-                                <div class="section-title">Basic Information</div>
+                                <!-- <div class="section-title">Basic Information</div> -->
                                 
                                 <div class="form-row">
                                     <div class="form-group">

@@ -122,261 +122,6 @@ $db->close();
     <title>Dashboard - <?php echo APP_NAME; ?></title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
-            color: #1a202c;
-            line-height: 1.6;
-        }
-
-        /* Layout Structure */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid #e2e8f0;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            background: linear-gradient(135deg, #0000FF, #4169E1);
-            color: white;
-        }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo img {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-        }
-
-        .sidebar-logo h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .sidebar-user {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .sidebar-user .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-user h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .sidebar-user p {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-
-        .nav-item {
-            display: block;
-            padding: 0.75rem 1.5rem;
-            color: #4a5568;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: #f7fafc;
-            color: #0000FF;
-            border-left-color: #0000FF;
-        }
-
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        .nav-item .nav-text {
-            flex: 1;
-        }
-
-        /* Main Content Area */
-        .main-wrapper {
-            flex: 1;
-            margin-left: 280px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-wrapper.expanded {
-            margin-left: 0;
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #4a5568;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            display: none;
-        }
-
-        .menu-toggle:hover {
-            background: #f7fafc;
-            color: #0000FF;
-        }
-
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .breadcrumb a {
-            color: #0000FF;
-            text-decoration: none;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        /*.notification-btn {*/
-        /*    position: relative;*/
-        /*    background: #f7fafc;*/
-        /*    border: 1px solid #e2e8f0;*/
-        /*    padding: 8px;*/
-        /*    border-radius: 8px;*/
-        /*    color: #4a5568;*/
-        /*    cursor: pointer;*/
-        /*    transition: all 0.3s ease;*/
-        /*}*/
-
-        /*.notification-btn:hover {*/
-        /*    background: #0000FF;*/
-        /*    color: white;*/
-        /*}*/
-
-        .notification-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ef4444;
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-1px);
-        }
-
-        /* Main Content */
-        .main-content {
-            padding: 2rem;
-        }
 
         .welcome-section {
             background: linear-gradient(135deg, #0000FF, #4169E1);
@@ -742,7 +487,7 @@ $db->close();
 
         .trips-table th,
         .trips-table td {
-            padding: 12px;
+            padding: 3px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
@@ -989,7 +734,7 @@ $db->close();
                             <i class="fas fa-bars"></i>
                         </button>
                         <div class="breadcrumb">
-                            <a href="dashboard.php">Home</a>
+                            <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
                             <i class="fas fa-chevron-right"></i>
                             <span>Dashboard</span>
                         </div>
@@ -1018,34 +763,7 @@ $db->close();
                 <!--</div>-->
 
                 <!-- Search Section -->
-                <div class="search-section">
-                    <div class="search-container">
-                        <!--<form id="searchForm" class="search-box">-->
-                        <!--    <i class="fas fa-search search-icon"></i>-->
-                        <!--    <input -->
-                        <!--        type="text" -->
-                        <!--        class="search-input" -->
-                        <!--        placeholder="Search drivers by name or ID..."-->
-                        <!--        id="searchInput"-->
-                        <!--        autocomplete="off"-->
-                        <!--    >-->
-                        <!--    <button type="submit" class="go-button">-->
-                        <!--        <i class="fas fa-arrow-right"></i>-->
-                        <!--        Go-->
-                        <!--    </button>-->
-                        <!--</form>-->
-                        
-                        <!-- Auto-suggestion dropdown -->
-                        <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
-                        
-                        <!--<div class="search-suggestions">-->
-                        <!--    <button class="suggestion-btn" onclick="searchFor('my trips today')">My Trips Today</button>-->
-                        <!--    <button class="suggestion-btn" onclick="searchFor('earnings this week')">Weekly Earnings</button>-->
-                        <!--    <button class="suggestion-btn" onclick="searchFor('trip history')">Trip History</button>-->
-                        <!--    <button class="suggestion-btn" onclick="searchFor('profile settings')">Settings</button>-->
-                        <!--</div>-->
-                    </div>
-                </div>
+                
 
                 <!-- Stats Grid -->
                 <div class="stats-grid">
@@ -1060,38 +778,7 @@ $db->close();
                         <!--<div class="stat-change">+12% from last month</div>-->
                     </div>
 
-                    <!--<div class="stat-card">-->
-                    <!--    <div class="stat-header">-->
-                    <!--        <span class="stat-title">Total Distance</span>-->
-                    <!--        <div class="stat-icon distance">-->
-                    <!--            <i class="fas fa-road"></i>-->
-                    <!--        </div>-->
-                    <!--    </div>-->
-                        <!--<div class="stat-value"><?php //echo number_format($dashboardData['total_distance'], 1); ?> km</div>-->
-                    <!--    <div class="stat-change">+8% from last month</div>-->
-                    <!--</div>-->
-
-                    <!--<div class="stat-card">-->
-                    <!--    <div class="stat-header">-->
-                    <!--        <span class="stat-title">Total Earnings</span>-->
-                    <!--        <div class="stat-icon earnings">-->
-                    <!--            <i class="fas fa-rupee-sign"></i>-->
-                    <!--        </div>-->
-                    <!--    </div>-->
-                        <!--<div class="stat-value">₹<?php //echo number_format($dashboardData['total_earnings'], 2); ?></div>-->
-                    <!--    <div class="stat-change">+15% from last month</div>-->
-                    <!--</div>-->
-
-                    <!--<div class="stat-card">-->
-                    <!--    <div class="stat-header">-->
-                    <!--        <span class="stat-title">Average Rating</span>-->
-                    <!--        <div class="stat-icon rating">-->
-                    <!--            <i class="fas fa-star"></i>-->
-                    <!--        </div>-->
-                    <!--    </div>-->
-                    <!--    <div class="stat-value"><?php //echo number_format($dashboardData['avg_rating'], 1); ?></div>-->
-                    <!--    <div class="stat-change">Excellent rating!</div>-->
-                    <!--</div>-->
+                    
                 </div>
 
                 <!-- Content Grid -->
@@ -1108,8 +795,7 @@ $db->close();
                             <table class="trips-table">
                                 <thead>
                                     <tr>
-                                        <th>Driver ID</th>
-<th>Organization ID</th>
+                                    
                                         <th>Driver Name</th>
                                       <th>Speed</th>
 
@@ -1121,8 +807,7 @@ $db->close();
                                     if(!empty($trip)){ ?>
                                     <tr>
                                       <tr>
-    <td class="trip-id"><?php echo htmlspecialchars($trip['driverId']); ?></td>
-    <td><?php echo htmlspecialchars($trip['school_id']); ?></td>
+    
     <td>
 <?= htmlspecialchars($trip['firstName'] ?? '') . ' ' . htmlspecialchars($trip['lastName'] ?? '') ?>
 </td>
@@ -1534,27 +1219,27 @@ if ($latitude != 0 && $longitude != 0) {
         }
     </script>
 <script>
-(function(){
-  const trySoftReload = () => location.reload();
-  const forceReload = () => window.location.href = window.location.pathname + '?_cb=' + Date.now();
+// (function(){
+//   const trySoftReload = () => location.reload();
+//   const forceReload = () => window.location.href = window.location.pathname + '?_cb=' + Date.now();
 
-  setTimeout(() => {
-    try {
-      trySoftReload();
-      // after short delay, if still same URL, force-bust
-      setTimeout(() => {
-        if (performance && performance.getEntriesByType) {
-          // best-effort: if page didn't unload within 1s, force reload
-          forceReload();
-        } else {
-          forceReload();
-        }
-      }, 1000);
-    } catch (e) {
-      forceReload();
-    }
-  }, 5000);
-})();
+//   setTimeout(() => {
+//     try {
+//       trySoftReload();
+//       // after short delay, if still same URL, force-bust
+//       setTimeout(() => {
+//         if (performance && performance.getEntriesByType) {
+//           // best-effort: if page didn't unload within 1s, force reload
+//           forceReload();
+//         } else {
+//           forceReload();
+//         }
+//       }, 1000);
+//     } catch (e) {
+//       forceReload();
+//     }
+//   }, 5000);
+// })();
 </script>
 
 </body>
