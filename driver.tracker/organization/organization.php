@@ -123,83 +123,94 @@ $db->close();
         .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
         .nav-item .nav-text { flex: 1; }
         .main-wrapper { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
-        .header { background: white; border-bottom: 1px solid #e2e8f0; padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header { background: white; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .header-left { display: flex; align-items: center; gap: 1rem; }
         .menu-toggle { background: none; border: none; font-size: 1.2rem; color: #4a5568; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.3s ease; display: none; }
         .menu-toggle:hover { background: #f7fafc; color: #0000FF; }
         .breadcrumb { display: flex; align-items: center; gap: 8px; color: #718096; font-size: 0.9rem; }
         .breadcrumb a { color: #0000FF; text-decoration: none; }
-        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 500; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .logout-btn:hover { background: #c82333; transform: translateY(-1px); }
-        .main-content { padding: 2rem; }
-        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .page-title h1 { font-size: 2rem; font-weight: 700; color: #1a202c; margin-bottom: 0.5rem; }
-        .page-title p { color: #718096; font-size: 1rem; }
-        .page-actions { display: flex; gap: 1rem; align-items: center; }
-        .search-box { position: relative; min-width: 300px; }
-        .search-input { width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; font-size: 0.95rem; transition: all 0.3s ease; font-family: inherit; }
+        .main-content { padding: 1.5rem 2rem; }
+
+        /* ── Page Header ── */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .page-title h1 { font-size: 1.35rem; font-weight: 700; color: #1a202c; margin-bottom: 2px; }
+        .page-title p { color: #718096; font-size: 0.82rem; }
+        .page-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .search-box { position: relative; min-width: 260px; }
+        .search-input { width: 100%; padding: 9px 14px 9px 38px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; transition: all 0.3s ease; font-family: inherit; }
         .search-input:focus { outline: none; border-color: #0000FF; box-shadow: 0 0 0 3px rgba(0,0,255,0.1); }
-        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
-        .btn-primary { background: #0000FF; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; font-family: inherit; white-space: nowrap; }
+        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.8rem; }
+        .btn-primary { background: #0000FF; color: white; border: none; padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap; }
         .btn-primary:hover { background: #0000CC; transform: translateY(-1px); }
-        .message-container { margin-bottom: 2rem; }
-        .message { padding: 1rem 1.5rem; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-weight: 500; animation: slideIn 0.3s ease; }
+
+        /* ── Messages ── */
+        .message-container { margin-bottom: 1.25rem; }
+        .message { padding: 0.85rem 1.25rem; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 0.9rem; animation: slideIn 0.3s ease; }
         .message.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .schools-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 2rem; }
-        .card-header { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
-        .card-title { font-size: 1.25rem; font-weight: 600; color: #1a202c; display: flex; align-items: center; gap: 8px; }
-        .schools-count { background: #0000FF; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+        /* ── Card ── */
+        .schools-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 1.5rem; }
+        .card-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 1rem; font-weight: 600; color: #1a202c; display: flex; align-items: center; gap: 8px; }
+        .schools-count { background: #0000FF; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+
+        /* ── Table ── */
         .schools-table { width: 100%; border-collapse: collapse; }
-        .schools-table th, .schools-table td { padding: 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        .schools-table th { background: #f8fafc; font-weight: 600; color: #4a5568; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-        .schools-table td { font-size: 0.95rem; }
+        .schools-table th, .schools-table td { padding: 13px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .schools-table th { background: #f8fafc; font-weight: 600; color: #4a5568; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .schools-table td { font-size: 0.9rem; }
         .schools-table tbody tr:hover { background: #f8fafc; }
-        .organization-info { display: flex; align-items: center; gap: 12px; }
-        .organization-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0000FF, #4169E1); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; flex-shrink: 0; }
-        .organization-details h4 { font-weight: 600; color: #1a202c; margin-bottom: 2px; }
-        .organization-details p { font-size: 0.85rem; color: #718096; }
-        .organization-id { font-weight: 600; color: #0000FF; }
-        .date-text { color: #4a5568; font-size: 0.85rem; white-space: nowrap; }
+        .organization-info { display: flex; align-items: center; gap: 10px; }
+        .organization-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0000FF, #4169E1); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+        .organization-details h4 { font-weight: 600; color: #1a202c; margin-bottom: 1px; font-size: 0.9rem; }
+        .organization-details p { font-size: 0.78rem; color: #718096; }
         .text-muted { color: #9ca3af; }
-        .actions { display: flex; gap: 8px; align-items: center; }
-        .btn-sm { padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 4px; font-family: inherit; }
+
+        /* ── Action Buttons (compact) ── */
+        .actions { display: flex; gap: 5px; align-items: center; }
+        .btn-sm { padding: 5px 10px; border-radius: 7px; font-size: 0.75rem; border: none; cursor: pointer; transition: all 0.25s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; font-weight: 500; white-space: nowrap; }
         .btn-view   { background: #f0f9ff; color: #0369a1; }
         .btn-view:hover   { background: #0369a1; color: white; }
         .btn-edit   { background: #fef3c7; color: #92400e; }
         .btn-edit:hover   { background: #92400e; color: white; }
         .btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-delete:hover { background: #dc2626; color: white; }
+
+        /* ── Modal ── */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; }
-        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
-        .modal-header i { width: 48px; height: 48px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; font-weight: 600; color: #1a202c; }
-        .modal-body { margin-bottom: 2rem; color: #4a5568; line-height: 1.6; }
-        .organization-highlight { background: #f3f4f6; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #dc2626; }
-        .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
-        .btn-cancel { background: #f3f4f6; color: #4a5568; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; }
+        .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 480px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+        .modal-header i { width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 600; color: #1a202c; }
+        .modal-body { margin-bottom: 1.5rem; color: #4a5568; line-height: 1.6; font-size: 0.92rem; }
+        .organization-highlight { background: #f3f4f6; padding: 0.85rem 1rem; border-radius: 8px; margin: 0.85rem 0; border-left: 4px solid #dc2626; font-size: 0.88rem; }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+        .btn-cancel { background: #f3f4f6; color: #4a5568; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
         .btn-cancel:hover { background: #e5e7eb; }
-        .btn-confirm-delete { background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; }
+        .btn-confirm-delete { background: #dc2626; color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
         .btn-confirm-delete:hover { background: #b91c1c; }
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 2rem; }
-        .pagination a, .pagination span { padding: 8px 12px; border-radius: 8px; text-decoration: none; color: #4a5568; font-weight: 500; transition: all 0.3s ease; }
+
+        /* ── Pagination ── */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 1.5rem; }
+        .pagination a, .pagination span { padding: 7px 11px; border-radius: 8px; text-decoration: none; color: #4a5568; font-weight: 500; font-size: 0.88rem; transition: all 0.3s ease; }
         .pagination a:hover { background: #f7fafc; color: #0000FF; }
         .pagination .current { background: #0000FF; color: white; }
         .pagination .disabled { opacity: 0.5; cursor: not-allowed; }
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #718096; }
-        .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; display: block; }
-        .empty-state h3 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #4a5568; }
+
+        /* ── Empty State ── */
+        .empty-state { text-align: center; padding: 3.5rem 2rem; color: #718096; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; display: block; }
+        .empty-state h3 { font-size: 1.1rem; margin-bottom: 0.4rem; color: #4a5568; }
+        .empty-state p { font-size: 0.88rem; }
+
+        /* ── Responsive ── */
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
         .sidebar-overlay.active { display: block; }
-        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1.5rem; margin-top: 3rem; }
-        .stat-item { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; }
-        .stat-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .stat-item i { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: linear-gradient(135deg, #0000FF, #4169E1); color: white; }
-        .stat-item h4 { font-size: 1.5rem; font-weight: 700; color: #1a202c; margin-bottom: 0.25rem; }
-        .stat-item p { color: #718096; font-size: 0.9rem; margin: 0; }
         @media (max-width: 1024px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -208,12 +219,11 @@ $db->close();
             .page-header { flex-direction: column; align-items: stretch; }
             .page-actions { flex-direction: column; }
             .search-box { min-width: auto; }
-            .actions { flex-direction: column; gap: 4px; }
+            .actions { flex-wrap: wrap; }
         }
         @media (max-width: 768px) {
-            .header, .main-content { padding: 1rem; }
-            .schools-table th, .schools-table td { padding: 12px 8px; }
-            .stats-summary { grid-template-columns: 1fr; margin-top: 2rem; }
+            .header, .main-content { padding: 0.75rem 1rem; }
+            .schools-table th, .schools-table td { padding: 10px 8px; }
         }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -222,40 +232,7 @@ $db->close();
 </head>
 <body>
 <div class="app-container">
-<!-- <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-logo">
-            <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
-            <h2>Organization Admin</h2>
-        </div>
-        <div class="sidebar-user">
-            <div class="user-avatar"><?php echo strtoupper(substr($username,0,2)); ?></div>
-            <h3><?php echo htmlspecialchars($username); ?></h3>
-            <p>ID: <?php echo htmlspecialchars($driver_id ?? 'N/A'); ?></p>
-        </div>
-    </div>
-    <div class="sidebar-nav">
-        <a href="dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>">
-            <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
-        </a>
-        <a href="users.php" class="nav-item <?php echo isActivePage('users.php'); ?>">
-            <i class="fas fa-users"></i><span class="nav-text">Users</span>
-        </a>
-        <a href="<?php echo BASE_URL; ?>organization/organization.php" class="nav-item <?php echo isActivePage('organization.php'); ?>">
-            <i class="fas fa-organization"></i><span class="nav-text">Organizations</span>
-        </a>
-        <a href="children.php" class="nav-item <?php echo isActivePage('children.php'); ?>">
-            <i class="fas fa-child"></i><span class="nav-text">Children</span>
-        </a>
-        <a href="profile.php" class="nav-item <?php echo isActivePage('profile.php'); ?>">
-            <i class="fas fa-user-circle"></i><span class="nav-text">Profile</span>
-        </a>
-        
-        <a href="alert.php" class="nav-item <?php echo isActivePage('alert.php'); ?>">
-                    <i class="fas fa-organization"></i><span class="nav-text">Alert</span>
-                </a>
-    </div>
-</nav> -->
+
   <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -289,14 +266,14 @@ $db->close();
 
         <div class="page-header">
             <div class="page-title">
-                <h1>Organizations Management</h1>
-                <p>Manage and view all registered schools in the system</p>
+                <h1>Organizations</h1>
+                <p>Manage all registered schools in the system</p>
             </div>
             <div class="page-actions">
                 <form method="GET" class="search-box">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" name="search" class="search-input"
-                        placeholder="Search schools by name, city, email..."
+                        placeholder="Search by name, city, email..."
                         value="<?php echo htmlspecialchars($search); ?>">
                     <?php if(isset($_GET['page'])): ?>
                         <input type="hidden" name="page" value="<?php echo intval($_GET['page']); ?>">
@@ -310,7 +287,7 @@ $db->close();
 
         <div class="schools-card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-organization"></i> All Organizations</h3>
+                <h3 class="card-title"><i class="fas fa-building"></i> All Organizations</h3>
                 <span class="schools-count"><?php echo number_format($filteredTotal); ?> schools</span>
             </div>
 
@@ -320,7 +297,6 @@ $db->close();
                 <thead>
                     <tr>
                         <th>Organization</th>
-
                         <th>Phone</th>
                         <th>Actions</th>
                     </tr>
@@ -360,12 +336,12 @@ $db->close();
 
             <?php else: ?>
             <div class="empty-state">
-                <i class="fas fa-organization"></i>
+                <i class="fas fa-building"></i>
                 <h3>No schools found</h3>
                 <?php if ($search): ?>
                     <p>No schools match "<?php echo htmlspecialchars($search); ?>"</p>
                     <a href="organization.php" class="btn-primary" style="margin-top:1rem;display:inline-flex">
-                        <i class="fas fa-arrow-left"></i> Show All Organizations
+                        <i class="fas fa-arrow-left"></i> Show All
                     </a>
                 <?php else: ?>
                     <p>No schools registered yet.</p>
@@ -396,24 +372,6 @@ $db->close();
         </div>
         <?php endif; ?>
 
-        <div class="stats-summary">
-            <div class="stat-item">
-                <i class="fas fa-organization"></i>
-                <div><h4><?php echo number_format($totalSchools); ?></h4><p>Total Organizations</p></div>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-phone"></i>
-                <div><h4><?php echo number_format($totalWithPhone); ?></h4><p>With Phone</p></div>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-envelope"></i>
-                <div><h4><?php echo number_format($totalWithEmail); ?></h4><p>With Email</p></div>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-database"></i>
-                <div><h4><?php echo number_format($filteredTotal); ?></h4><p>Total Records</p></div>
-            </div>
-        </div>
     </main>
 </div>
 </div>
