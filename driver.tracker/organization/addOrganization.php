@@ -52,28 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 (name, industry_id, org_id, address, city, state, postal_code, phone, email, latitude, longitude) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            if (!$stmt) {
-                die("Prepare failed: " . $conn->error);
-            }
+            if (!$stmt) { die("Prepare failed: " . $conn->error); }
 
-            $stmt->bind_param(
-                'sisssssssss',
-                $name,
-                $industry_id,
-                $org_id,
-                $address,
-                $city,
-                $state,
-                $postal_code,
-                $phone,
-                $email,
-                $latitude,
-                $longitude
-            );
+            $stmt->bind_param('sisssssssss', $name, $industry_id, $org_id, $address, $city, $state, $postal_code, $phone, $email, $latitude, $longitude);
 
-            if (!$stmt->execute()) {
-                die("Execute failed: " . $stmt->error);
-            }
+            if (!$stmt->execute()) { die("Execute failed: " . $stmt->error); }
 
             echo "Insert successful!";
             $stmt->close();
@@ -98,6 +81,8 @@ if (isset($_GET['logout'])) { session_unset(); session_destroy(); redirect(LOGIN
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height:1.6}
 .app-container{display:flex;min-height:100vh}
+
+/* Sidebar */
 .sidebar{width:280px;background:white;border-right:1px solid #e2e8f0;position:fixed;height:100vh;left:0;top:0;z-index:1000;overflow-y:auto;transition:transform .3s ease}
 .sidebar-header{padding:1.5rem;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#0000FF,#4169E1);color:white}
 .sidebar-logo{display:flex;align-items:center;gap:12px}
@@ -111,94 +96,91 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
 .nav-item{display:flex;padding:.75rem 1.5rem;color:#4a5568;text-decoration:none;transition:all .3s;border-left:3px solid transparent;align-items:center;gap:12px}
 .nav-item:hover,.nav-item.active{background:#f7fafc;color:#0000FF;border-left-color:#0000FF}
 .nav-item i{width:20px;text-align:center;font-size:1.1rem}
+.nav-item .nav-text{flex:1}
+
+/* Main */
 .main-wrapper{flex:1;margin-left:280px;transition:margin-left .3s}
-.header{background:white;border-bottom:1px solid #e2e8f0;padding:1rem 2rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.header{background:white;border-bottom:1px solid #e2e8f0;padding:.75rem 2rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .header-content{display:flex;justify-content:space-between;align-items:center}
 .header-left{display:flex;align-items:center;gap:1rem}
-.menu-toggle{background:none;border:none;font-size:1.2rem;color:#4a5568;cursor:pointer;padding:8px;border-radius:8px;display:none}
+.menu-toggle{background:none;border:none;font-size:1.2rem;color:#4a5568;cursor:pointer;padding:8px;border-radius:8px;transition:all .3s;display:none}
+.menu-toggle:hover{background:#f7fafc;color:#0000FF}
 .breadcrumb{display:flex;align-items:center;gap:8px;color:#718096;font-size:.9rem}
 .breadcrumb a{color:#0000FF;text-decoration:none}
-.logout-btn{background:#dc3545;color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:500;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .3s}
-.logout-btn:hover{background:#c82333}
-.main-content{padding:2rem}
-.page-header{margin-bottom:2rem}
-.page-header h1{font-size:2rem;font-weight:700;margin-bottom:.5rem}
-.page-header p{color:#718096}
-.alert{padding:1rem 1.5rem;border-radius:12px;display:flex;align-items:flex-start;gap:12px;font-weight:500;margin-bottom:1.5rem}
+.logout-btn{background:#dc3545;color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:500;font-size:.85rem;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .3s}
+.logout-btn:hover{background:#c82333;transform:translateY(-1px)}
+
+/* Content */
+.main-content{padding:1.5rem 2rem}
+.page-header{margin-bottom:1.5rem}
+.page-header h1{font-size:1.35rem;font-weight:700;margin-bottom:2px}
+.page-header p{color:#718096;font-size:.82rem}
+
+/* Alert */
+.alert{padding:.9rem 1.25rem;border-radius:10px;display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:.9rem;margin-bottom:1.25rem}
 .alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
-.alert ul{margin:.5rem 0 0 1rem}
-.alert ul li{margin-bottom:4px;font-weight:400}
-.form-card{background:white;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden}
-.form-card-header{padding:1.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}
-.form-card-title{font-size:1.25rem;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:8px}
-.form-body{padding:2rem}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.alert ul{margin:.4rem 0 0 1rem}
+.alert ul li{margin-bottom:3px;font-weight:400}
+
+/* Form Card */
+.form-card{background:white;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden}
+.form-card-header{padding:1rem 1.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.form-card-title{font-size:1rem;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:8px}
+.form-body{padding:1.5rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
 .form-group{display:flex;flex-direction:column}
 .form-group.full-width{grid-column:1 / -1}
-label{font-weight:600;font-size:.9rem;color:#374151;margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+label{font-weight:600;font-size:.85rem;color:#374151;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
 label .req{color:#dc2626}
-.form-control{padding:12px 16px;border:1px solid #e2e8f0;border-radius:10px;font-size:.95rem;font-family:inherit;color:#1a202c;background:white;transition:all .3s;width:100%}
+.form-control{padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;font-family:inherit;color:#1a202c;background:white;transition:all .3s;width:100%}
 .form-control:focus{outline:none;border-color:#0000FF;box-shadow:0 0 0 3px rgba(0,0,255,.1)}
 .form-control::placeholder{color:#9ca3af}
-textarea.form-control{resize:vertical;min-height:90px}
-.hint{font-size:.8rem;color:#9ca3af;margin-top:4px}
-.section-label{font-size:.78rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;grid-column:1 / -1;padding-bottom:.5rem;border-bottom:1px solid #f1f5f9;margin-top:.5rem;display:flex;align-items:center;justify-content:space-between}
-.form-actions{display:flex;gap:1rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid #e2e8f0}
-.btn-submit{background:#0000FF;color:white;border:none;padding:13px 28px;border-radius:12px;font-weight:600;cursor:pointer;font-size:1rem;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all .3s}
+textarea.form-control{resize:vertical;min-height:80px}
+.hint{font-size:.76rem;color:#9ca3af;margin-top:3px}
+.section-label{font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;grid-column:1 / -1;padding-bottom:.4rem;border-bottom:1px solid #f1f5f9;margin-top:.25rem;display:flex;align-items:center;justify-content:space-between}
+
+/* Actions */
+.form-actions{display:flex;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #e2e8f0}
+.btn-submit{background:#0000FF;color:white;border:none;padding:10px 22px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem;font-family:inherit;display:flex;align-items:center;gap:7px;transition:all .3s}
 .btn-submit:hover{background:#0000CC;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,255,.3)}
-.btn-back{background:#f3f4f6;color:#4a5568;border:none;padding:13px 24px;border-radius:12px;font-weight:500;font-size:1rem;font-family:inherit;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .3s}
+.btn-back{background:#f3f4f6;color:#4a5568;border:none;padding:10px 20px;border-radius:10px;font-weight:500;font-size:.9rem;font-family:inherit;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s}
 .btn-back:hover{background:#e5e7eb}
+
+/* Sidebar overlay */
 .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:999;display:none}
 .sidebar-overlay.active{display:block}
-.geocode-status{padding:8px 12px;border-radius:8px;font-size:.85rem;font-weight:500;margin-top:8px;display:none;align-items:center;gap:8px}
+
+/* Geocode */
+.geocode-status{padding:7px 11px;border-radius:8px;font-size:.82rem;font-weight:500;margin-top:7px;display:none;align-items:center;gap:7px}
 .geocode-status.loading{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;display:flex}
 .geocode-status.success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;display:flex}
 .geocode-status.error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;display:flex}
 .coord-field-wrapper{position:relative}
-.coord-field-wrapper .form-control{padding-right:44px}
-.coord-clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.85rem;padding:4px 6px;border-radius:4px;transition:color .2s;line-height:1}
+.coord-field-wrapper .form-control{padding-right:40px}
+.coord-clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.8rem;padding:4px 5px;border-radius:4px;transition:color .2s;line-height:1}
 .coord-clear-btn:hover{color:#dc2626}
-.autofill-btn{background:#0000FF;color:white;border:none;padding:5px 14px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .2s}
+.autofill-btn{background:#0000FF;color:white;border:none;padding:4px 12px;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .2s}
 .autofill-btn:hover{background:#0000CC}
 .autofill-btn:disabled{background:#94a3b8;cursor:not-allowed}
-.manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;color:#059669;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+.manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:#059669;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;padding:2px 7px;margin-left:7px;vertical-align:middle}
 
 @media(max-width:1024px){
     .sidebar{transform:translateX(-100%)}.sidebar.active{transform:translateX(0)}
     .main-wrapper{margin-left:0}.menu-toggle{display:block}
     .form-grid{grid-template-columns:1fr}.form-group.full-width{grid-column:1}
-    .section-label{flex-direction:column;align-items:flex-start;gap:8px}
+    .section-label{flex-direction:column;align-items:flex-start;gap:7px}
 }
 @media(max-width:768px){
-    .header,.main-content{padding:1rem}.form-body{padding:1.25rem}
+    .header,.main-content{padding:.75rem 1rem}.form-body{padding:1rem}
     .form-actions{flex-direction:column}
 }
 </style>
 </head>
 <body>
 <div class="app-container">
-<!-- <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-logo">
-            <img src="/schoolAdmin/driver.tracker/icon/schooladmin.jpg" alt="Logo">
-            <h2>Organization Admin</h2>
-        </div>
-        <div class="sidebar-user">
-            <div class="user-avatar"><?php echo strtoupper(substr($username,0,2)); ?></div>
-            <h3><?php echo htmlspecialchars($username); ?></h3>
-            <p>ID: <?php echo htmlspecialchars($driver_id ?? 'N/A'); ?></p>
-        </div>
-    </div>
-    <div class="sidebar-nav">
-        <a href="dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-        <a href="users.php"     class="nav-item <?php echo isActivePage('users.php'); ?>"><i class="fas fa-users"></i><span>Users</span></a>
-        <a href="organization.php" class="nav-item <?php echo isActivePage('organization.php'); ?>"><i class="fas fa-building"></i><span>Organizations</span></a>
-        <a href="profile.php"   class="nav-item <?php echo isActivePage('profile.php'); ?>"><i class="fas fa-user-circle"></i><span>Profile</span></a>
-        <a href="children.php"  class="nav-item <?php echo isActivePage('children.php'); ?>"><i class="fas fa-user-circle"></i><span>Children</span></a>
-        <a href="alert.php"     class="nav-item <?php echo isActivePage('alert.php'); ?>"><i class="fas fa-bell"></i><span>Alert</span></a>
-    </div>
-</nav> -->
+
   <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="main-wrapper" id="mainWrapper">
     <header class="header">
@@ -216,16 +198,17 @@ textarea.form-control{resize:vertical;min-height:90px}
             </a>
         </div>
     </header>
+
     <main class="main-content">
 
         <div class="page-header">
-            <h1><i class="fas fa-plus-circle" style="color:#0000FF;margin-right:10px;"></i>Add New Organization</h1>
+            <h1><i class="fas fa-plus-circle" style="color:#0000FF;margin-right:8px;"></i>Add New Organization</h1>
             <p>Fill in the details below to register a new organization in the system</p>
         </div>
 
         <?php if (!empty($errors)): ?>
         <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle" style="font-size:1.2rem;margin-top:2px;flex-shrink:0;"></i>
+            <i class="fas fa-exclamation-circle" style="font-size:1.1rem;margin-top:2px;flex-shrink:0;"></i>
             <div><strong>Please fix the following errors:</strong>
                 <ul><?php foreach($errors as $e): ?><li><?php echo htmlspecialchars($e); ?></li><?php endforeach; ?></ul>
             </div>
@@ -244,7 +227,7 @@ textarea.form-control{resize:vertical;min-height:90px}
 
                         <!-- Organization Name -->
                         <div class="form-group full-width">
-                            <label><i class="fas fa-building" style="color:#0000FF;font-size:.85rem;"></i> Organization Name <span class="req">*</span></label>
+                            <label><i class="fas fa-building" style="color:#0000FF;font-size:.8rem;"></i> Organization Name <span class="req">*</span></label>
                             <input type="text" name="name" id="nameField" class="form-control"
                                    placeholder="e.g. Delhi Public School"
                                    value="<?php echo htmlspecialchars($name); ?>" required>
@@ -252,7 +235,7 @@ textarea.form-control{resize:vertical;min-height:90px}
 
                         <!-- Address -->
                         <div class="form-group full-width">
-                            <label><i class="fas fa-map-marker-alt" style="color:#0000FF;font-size:.85rem;"></i> Address <span class="req">*</span></label>
+                            <label><i class="fas fa-map-marker-alt" style="color:#0000FF;font-size:.8rem;"></i> Address <span class="req">*</span></label>
                             <textarea id="addressField" name="address" class="form-control" placeholder="Enter full street address"><?php echo htmlspecialchars($address); ?></textarea>
                             <div class="geocode-status" id="geocodeStatus"></div>
                         </div>
@@ -260,7 +243,7 @@ textarea.form-control{resize:vertical;min-height:90px}
                         <!-- Industry Type -->
                         <div class="form-group">
                             <label>
-                                <i class="fas fa-industry" style="color:#0000FF;font-size:.85rem;"></i>
+                                <i class="fas fa-industry" style="color:#0000FF;font-size:.8rem;"></i>
                                 Industry Type <span class="req">*</span>
                             </label>
                             <?php
@@ -278,10 +261,10 @@ textarea.form-control{resize:vertical;min-height:90px}
                             </select>
                         </div>
 
-                        <!-- ===== ORG ID FIELD ===== -->
+                        <!-- Org ID -->
                         <div class="form-group">
                             <label>
-                                <i class="fas fa-id-badge" style="color:#0000FF;font-size:.85rem;"></i>
+                                <i class="fas fa-id-badge" style="color:#0000FF;font-size:.8rem;"></i>
                                 Org ID <span class="req">*</span>
                             </label>
                             <input type="text" name="org_id" id="orgIdField" class="form-control"
@@ -292,22 +275,21 @@ textarea.form-control{resize:vertical;min-height:90px}
                                    required>
                             <span class="hint">Auto-generated</span>
                         </div>
-                        <!-- ===== END ORG ID ===== -->
 
                         <div class="section-label">Location</div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-city" style="color:#0000FF;font-size:.85rem;"></i> City <span class="req">*</span></label>
+                            <label><i class="fas fa-city" style="color:#0000FF;font-size:.8rem;"></i> City <span class="req">*</span></label>
                             <input type="text" id="cityField" name="city" class="form-control" placeholder="e.g. New Delhi" value="<?php echo htmlspecialchars($city); ?>" required>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-map" style="color:#0000FF;font-size:.85rem;"></i> State <span class="req">*</span></label>
+                            <label><i class="fas fa-map" style="color:#0000FF;font-size:.8rem;"></i> State <span class="req">*</span></label>
                             <input type="text" id="stateField" name="state" class="form-control" placeholder="e.g. Delhi" value="<?php echo htmlspecialchars($state); ?>" required>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-envelope-open-text" style="color:#0000FF;font-size:.85rem;"></i> Postal Code</label>
+                            <label><i class="fas fa-envelope-open-text" style="color:#0000FF;font-size:.8rem;"></i> Postal Code</label>
                             <input type="text" name="postal_code" class="form-control" placeholder="e.g. 110001" value="<?php echo htmlspecialchars($postal_code); ?>">
                             <span class="hint">Optional — 6 digit PIN code</span>
                         </div>
@@ -315,18 +297,18 @@ textarea.form-control{resize:vertical;min-height:90px}
                         <div class="section-label">Contact Information</div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-phone" style="color:#0000FF;font-size:.85rem;"></i> Phone Number</label>
+                            <label><i class="fas fa-phone" style="color:#0000FF;font-size:.8rem;"></i> Phone Number</label>
                             <input type="tel" name="phone" class="form-control" placeholder="e.g. +91 98765 43210" value="<?php echo htmlspecialchars($phone); ?>">
                             <span class="hint">Optional</span>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-envelope" style="color:#0000FF;font-size:.85rem;"></i> Email Address</label>
+                            <label><i class="fas fa-envelope" style="color:#0000FF;font-size:.8rem;"></i> Email Address</label>
                             <input type="email" name="email" class="form-control" placeholder="e.g. info@organization.com" value="<?php echo htmlspecialchars($email); ?>">
                             <span class="hint">Optional</span>
                         </div>
 
-                        <!-- ===== COORDINATES SECTION ===== -->
+                        <!-- Coordinates -->
                         <div class="section-label">
                             <span>
                                 Coordinates
@@ -340,7 +322,7 @@ textarea.form-control{resize:vertical;min-height:90px}
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-map-pin" style="color:#0000FF;font-size:.85rem;"></i> Latitude</label>
+                            <label><i class="fas fa-map-pin" style="color:#0000FF;font-size:.8rem;"></i> Latitude</label>
                             <div class="coord-field-wrapper">
                                 <input type="text" name="latitude" id="latitudeField" class="form-control"
                                        placeholder="e.g. 28.61234567"
@@ -354,7 +336,7 @@ textarea.form-control{resize:vertical;min-height:90px}
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-map-pin" style="color:#0000FF;font-size:.85rem;"></i> Longitude</label>
+                            <label><i class="fas fa-map-pin" style="color:#0000FF;font-size:.8rem;"></i> Longitude</label>
                             <div class="coord-field-wrapper">
                                 <input type="text" name="longitude" id="longitudeField" class="form-control"
                                        placeholder="e.g. 77.20890123"
@@ -366,7 +348,6 @@ textarea.form-control{resize:vertical;min-height:90px}
                             </div>
                             <span class="hint">Auto-fill</span>
                         </div>
-                        <!-- ===== END COORDINATES ===== -->
 
                     </div>
 
@@ -389,31 +370,25 @@ const sidebarOverlay = document.getElementById('sidebarOverlay');
 menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); });
 sidebarOverlay.addEventListener('click', () => { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); });
 window.addEventListener('resize', () => { if (window.innerWidth > 1024) { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); } });
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => { if(window.innerWidth <= 1024){ sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); }});
+});
 
 // ===== ORG ID AUTO-GENERATE =====
 document.getElementById('nameField').addEventListener('blur', function () {
     const orgIdField = document.getElementById('orgIdField');
-    
     if (orgIdField.value.trim() !== '') return;
-
     const name = this.value.trim();
     if (!name) return;
-
-    // 3-letter prefix banana — har word ka pehla letter
     const words = name.split(/\s+/);
     let prefix = words.map(w => w[0] ? w[0].toUpperCase() : '').join('').substring(0, 3);
-    prefix = prefix.padEnd(3, 'X'); // agar 3 se kam words hain
-
-    // Random 3-digit number (user baad mein edit kar sakta hai)
+    prefix = prefix.padEnd(3, 'X');
     const num = String(Math.floor(Math.random() * 900) + 100);
     orgIdField.value = prefix + num;
 });
-
-// OrgId manually type karne par uppercase enforce karo
 document.getElementById('orgIdField').addEventListener('input', function () {
     this.value = this.value.toUpperCase();
 });
-// ===== END ORG ID =====
 
 function showStatus(type, msg) {
     const el = document.getElementById('geocodeStatus');
@@ -459,7 +434,6 @@ function fetchCoordinates() {
     .then(data => {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Auto-fill from Address';
-
         if (data && data.length > 0) {
             const lat = parseFloat(data[0].lat).toFixed(8);
             const lon = parseFloat(data[0].lon).toFixed(8);
