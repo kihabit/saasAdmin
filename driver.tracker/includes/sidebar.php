@@ -8,6 +8,8 @@
     <a href="<?php echo BASE_URL;?>dashboard.php">Dashboard</a>
     <a href="<?php echo BASE_URL;?>users.php">Users</a>
     <a href="<?php echo BASE_URL;?>eduUser/users.php">Edu User</a>
+    <a href="<?php echo BASE_URL;?>fncUser/users.php">Fnc User</a>
+    
     <a href="<?php echo BASE_URL;?>organizations/organization.php">Organization</a>
     <a href="<?php echo BASE_URL;?>students/students.php">Students</a>
     <a href="<?php echo BASE_URL;?>alert.php">Alert</a>
@@ -220,8 +222,11 @@
 
 <?php
 // Active page detection
-$currentPage = basename($_SERVER['PHP_SELF']);
-$currentDir  = basename(dirname($_SERVER['PHP_SELF']));
+$currentPage     = basename($_SERVER['PHP_SELF']);
+$currentDir      = basename(dirname($_SERVER['PHP_SELF']));
+$currentFullPath = $_SERVER['PHP_SELF'];
+$isFinUser       = (strpos($currentFullPath, 'finUser') !== false);
+$isEduUser       = (strpos($currentFullPath, 'eduUser') !== false);
 ?>
 
 <nav class="sidebar" id="sidebar">
@@ -242,15 +247,21 @@ $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
             </a>
 
             <a href="<?php echo BASE_URL;?>users.php" 
-               class="nav-item <?php echo ($currentPage == 'users.php' && $currentDir != 'eduUser') ? 'active' : ''; ?>">
+               class="nav-item <?php echo ($currentPage == 'users.php' && !$isEduUser && !$isFinUser) ? 'active' : ''; ?>">
                 <i class="fas fa-users"></i>
                 <span class="nav-text">Users</span>
             </a>
 
             <a href="<?php echo BASE_URL;?>eduUser/users.php" 
-               class="nav-item <?php echo ($currentDir == 'eduUser') ? 'active' : ''; ?>">
+               class="nav-item <?php echo $isEduUser ? 'active' : ''; ?>">
                 <i class="fas fa-user-tie"></i>
                 <span class="nav-text">Edu User</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>finUser/users.php" 
+               class="nav-item <?php echo $isFinUser ? 'active' : ''; ?>">
+                <i class="fas fa-user-shield"></i>
+                <span class="nav-text">Fin User</span>
             </a>
 
             <a href="<?php echo BASE_URL;?>profile.php" 
