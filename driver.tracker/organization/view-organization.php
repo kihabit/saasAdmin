@@ -164,21 +164,10 @@ $db->close();
                         <i class="fas fa-chevron-right"></i>
                         <span><?php echo htmlspecialchars($organization['name']); ?></span>
                     </div>
-                    <div class="header-actions">
-                        <a href="<?php echo BASE_URL;?>organization/organization.php" class="btn-back">
-                            <i class="fas fa-arrow-left"></i>
-                            Back to Organizations
-                        </a>
-                        <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?')">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Logout
-                        </a>
-                    </div>
                 </div>
                 <div class="header-actions">
                     <a href="organization.php" class="btn-back">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Back</span>
+                        <i class="fas fa-arrow-left"></i> Back
                     </a>
                     <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?')">
                         <i class="fas fa-sign-out-alt"></i> Logout

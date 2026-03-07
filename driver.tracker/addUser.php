@@ -272,7 +272,7 @@ if (isset($_GET['logout'])) {
                                     <label class="form-label">Search Organization <span>*</span></label>
                                     <div class="iw org-wrap">
                                         <i class="fas fa-search ii"></i>
-                                        <input type="text" id="orgSearch" class="fc" placeholder="Type organization name to search..." autocomplete="off">
+                                        <input type="text" id="orgSearch" class="fc" placeholder="Type organization name or ID to search..." autocomplete="off">
                                         <span id="orgSpn" style="display:none;position:absolute;right:12px;">
                                             <span style="display:inline-block;width:13px;height:13px;border:2px solid #9ca3af;border-top-color:#0000FF;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
                                         </span>
@@ -289,7 +289,7 @@ if (isset($_GET['logout'])) {
                                     <span class="ferr" id="orgSearchError">Please select an organization</span>
                                 </div>
                             </div>
-                            <div class="fg2" style="max-width:520px;margin-top:0.75rem;">
+                            <div class="fg3" style="margin-top:0.75rem;">
                                 <div class="form-group">
                                     <label class="form-label">Organization ID</label>
                                     <div class="iw"><i class="fas fa-id-badge ii"></i>
@@ -302,11 +302,18 @@ if (isset($_GET['logout'])) {
                                         <input type="text" id="orgNmDis" class="fc" placeholder="Auto-filled" readonly>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label class="form-label">Industry Type</label>
+                                    <div class="iw"><i class="fas fa-industry ii"></i>
+                                        <input type="text" id="orgIndDis" class="fc" placeholder="Auto-filled" readonly>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <input type="hidden" id="school_id"   value="">
                         <input type="hidden" id="school_name" value="">
+                        <input type="hidden" id="industry_id" value="">
 
                         <!-- Account Info -->
                         <div class="section-block">
@@ -473,41 +480,16 @@ const orgIdD   = document.getElementById('orgIdDis');
 const orgNmD   = document.getElementById('orgNmDis');
 let selOrg=null, orgTmr=null, orgIdx=-1, orgRes=[];
 
-const ORGS = [
-    {id:1,  name:"Delhi Public School, R.K. Puram",      city:"New Delhi",  state:"Delhi"},
-    {id:2,  name:"Delhi Public School, Dwarka",           city:"New Delhi",  state:"Delhi"},
-    {id:3,  name:"Kendriya Vidyalaya, Andrews Ganj",      city:"New Delhi",  state:"Delhi"},
-    {id:4,  name:"Modern School, Barakhamba Road",         city:"New Delhi",  state:"Delhi"},
-    {id:5,  name:"Ryan International School",             city:"New Delhi",  state:"Delhi"},
-    {id:6,  name:"City Montessori School",                city:"Lucknow",    state:"Uttar Pradesh"},
-    {id:7,  name:"La Martiniere College",                  city:"Lucknow",    state:"Uttar Pradesh"},
-    {id:8,  name:"Delhi Public School, Noida",            city:"Noida",      state:"Uttar Pradesh"},
-    {id:9,  name:"Cathedral and John Connon School",      city:"Mumbai",     state:"Maharashtra"},
-    {id:10, name:"Dhirubhai Ambani International School", city:"Mumbai",     state:"Maharashtra"},
-    {id:11, name:"Delhi Public School, Bangalore",        city:"Bangalore",  state:"Karnataka"},
-    {id:12, name:"National Public School, Bangalore",     city:"Bangalore",  state:"Karnataka"},
-    {id:13, name:"Delhi Public School, Chennai",          city:"Chennai",    state:"Tamil Nadu"},
-    {id:14, name:"Delhi Public School, Jaipur",           city:"Jaipur",     state:"Rajasthan"},
-    {id:15, name:"The Doon School",                       city:"Dehradun",   state:"Uttarakhand"},
-    {id:16, name:"Welham Boys' School",                   city:"Dehradun",   state:"Uttarakhand"},
-    {id:17, name:"Delhi Public School, Hyderabad",        city:"Hyderabad",  state:"Telangana"},
-    {id:18, name:"Delhi Public School, Patna",            city:"Patna",      state:"Bihar"},
-    {id:19, name:"Delhi Public School, Bhopal",           city:"Bhopal",     state:"Madhya Pradesh"},
-    {id:20, name:"Delhi Public School, Gurgaon",          city:"Gurgaon",    state:"Haryana"},
-];
-
-function locFilter(q) {
-    const s=q.toLowerCase();
-    return ORGS.filter(o=>o.name.toLowerCase().includes(s)||o.city.toLowerCase().includes(s)||o.state.toLowerCase().includes(s)).slice(0,10);
-}
-
+// ── Database se fetch ──
 async function fetchOrgs(q) {
     try {
-        const r=await fetch(`search_school.php?q=${encodeURIComponent(q)}`);
-        const d=await r.json();
-        if(d.schools&&d.schools.length) return d.schools;
-    } catch(e){}
-    return locFilter(q);
+        const r = await fetch(`organization/search_organization.php?q=${encodeURIComponent(q)}`);
+        const d = await r.json();
+        if (d.schools && d.schools.length) return d.schools;
+        return [];
+    } catch(e) {
+        return [];
+    }
 }
 
 function hlText(t,q) {
@@ -515,14 +497,19 @@ function hlText(t,q) {
     return t.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<span class="mhl">$1</span>');
 }
 
+// ── FIX 2: org_id show karo dropdown mein ──
 function renderOrgs(res,q) {
     orgRes=res; orgIdx=-1; orgBody.innerHTML='';
-    if(!res.length) { orgBody.innerHTML=`<div class="org-empty">No organization found for "<strong>${q}</strong>"</div>`; }
-    else {
+    if(!res.length) {
+        orgBody.innerHTML=`<div class="org-empty">No organization found for "<strong>${q}</strong>"</div>`;
+    } else {
         res.forEach((o,i) => {
             const d=document.createElement('div'); d.className='org-opt'; d.dataset.i=i;
             d.innerHTML=`<div class="org-opt-name">${hlText(o.name,q)}</div>
-                <div class="org-opt-meta"><span class="org-id-tag">ID: ${o.id}</span><span>📍 ${o.city}, ${o.state}</span></div>`;
+                <div class="org-opt-meta">
+                    <span class="org-id-tag">${o.org_id || o.id}</span>
+                    <span>📍 ${o.city}, ${o.state}</span>
+                </div>`;
             d.addEventListener('mousedown', e=>{e.preventDefault(); pickOrg(o);});
             orgBody.appendChild(d);
         });
@@ -530,18 +517,31 @@ function renderOrgs(res,q) {
     orgDrop.classList.add('open');
 }
 
+// ── FIX 3: org_id fields mein fill karo ──
 function pickOrg(o) {
-    selOrg=o; orgIdH.value=o.id; orgNmH.value=o.name;
-    orgIdD.value=o.id; orgNmD.value=o.name; orgSrch.value=o.name;
-    orgSrch.classList.add('valid'); orgSrch.classList.remove('invalid');
-    orgBTx.textContent=`✅ ${o.name} | ID: ${o.id} | ${o.city}, ${o.state}`;
+    selOrg = o;
+    orgIdH.value  = o.id;
+    orgNmH.value  = o.name;
+    orgIdD.value  = o.org_id || o.id;
+    orgNmD.value  = o.name;
+    document.getElementById('orgIndDis').value   = o.industry_name || '';
+    document.getElementById('industry_id').value = o.industry_id   || '';
+    orgSrch.value = o.name;
+    orgSrch.classList.add('valid');
+    orgSrch.classList.remove('invalid');
+    orgBTx.textContent = `✅ ${o.name} | ${o.org_id || o.id} | ${o.industry_name || 'N/A'} | ${o.city}, ${o.state}`;
     orgBadge.classList.add('show');
     document.getElementById('orgSearchError').style.display='none';
-    orgDrop.classList.remove('open'); revalidate();
+    orgDrop.classList.remove('open');
+    revalidate();
 }
 
 function clearOrg() {
-    selOrg=null; orgIdH.value=''; orgNmH.value=''; orgIdD.value=''; orgNmD.value='';
+    selOrg=null;
+    orgIdH.value=''; orgNmH.value='';
+    orgIdD.value=''; orgNmD.value='';
+    document.getElementById('orgIndDis').value   = '';
+    document.getElementById('industry_id').value = '';
     orgSrch.value=''; orgSrch.classList.remove('valid','invalid');
     orgBadge.classList.remove('show'); orgDrop.classList.remove('open'); revalidate();
 }
@@ -550,7 +550,7 @@ document.getElementById('clrOrg').addEventListener('click', clearOrg);
 
 orgSrch.addEventListener('input', function() {
     const q=this.value.trim(); clearTimeout(orgTmr);
-    if(selOrg&&q!==selOrg.name){ selOrg=null; orgIdH.value=''; orgNmH.value=''; orgIdD.value=''; orgNmD.value=''; orgBadge.classList.remove('show'); }
+    if(selOrg&&q!==selOrg.name){ selOrg=null; orgIdH.value=''; orgNmH.value=''; orgIdD.value=''; orgNmD.value=''; document.getElementById('orgIndDis').value=''; document.getElementById('industry_id').value=''; orgBadge.classList.remove('show'); }
     if(q.length<2){orgDrop.classList.remove('open'); orgSpn.style.display='none'; return;}
     orgSpn.style.display='block';
     orgTmr=setTimeout(async()=>{const res=await fetchOrgs(q); orgSpn.style.display='none'; renderOrgs(res,q);},300);
@@ -682,16 +682,24 @@ document.getElementById('addUserForm').addEventListener('submit', async function
     elBtn.classList.add('loading'); elBtn.textContent='Adding User...'; elBtn.disabled=true;
 
     const payload={
-        firstName:   elFN.value.trim(), lastName:  elLN.value.trim(),
-        role:        elRL.value,        school_id: selOrg?selOrg.id:null,
-        school_name: selOrg?selOrg.name:null, email: elEM.value.trim(),
-        username:    elUN.value.trim(), phone_number: elPH.value.trim(),
+        firstName:   elFN.value.trim(),
+        lastName:    elLN.value.trim(),
+        role:        elRL.value,
+        school_id:   selOrg ? selOrg.id   : null,
+        school_name: selOrg ? selOrg.name : null,
+        org_id:      selOrg ? (selOrg.org_id || selOrg.id) : null,
+        email:       elEM.value.trim(),
+        username:    elUN.value.trim(),
+        phone_number:elPH.value.trim(),
         address:     [elST.value.trim(),elCT.value.trim(),elSTE.value.trim(),elCN.value.trim()].join(', ')+' - '+elZIP.value.trim(),
-        street:      elST.value.trim(), city:    elCT.value.trim(),
-        state:       elSTE.value.trim(),country: elCN.value.trim(),
-        zipcode:     elZIP.value.trim(),password: elPW.value,
-        latitude:    document.getElementById('latitude').value||null,
-        longitude:   document.getElementById('longitude').value||null,
+        street:      elST.value.trim(),
+        city:        elCT.value.trim(),
+        state:       elSTE.value.trim(),
+        country:     elCN.value.trim(),
+        zipcode:     elZIP.value.trim(),
+        password:    elPW.value,
+        latitude:    document.getElementById('latitude').value  || null,
+        longitude:   document.getElementById('longitude').value || null,
     };
 
     try {

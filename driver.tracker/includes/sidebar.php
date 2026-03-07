@@ -7,6 +7,7 @@
 
     <a href="<?php echo BASE_URL;?>dashboard.php">Dashboard</a>
     <a href="<?php echo BASE_URL;?>users.php">Users</a>
+    <a href="<?php echo BASE_URL;?>eduUser/users.php">Edu User</a>
     <a href="<?php echo BASE_URL;?>organizations/organization.php">Organization</a>
     <a href="<?php echo BASE_URL;?>students/students.php">Students</a>
     <a href="<?php echo BASE_URL;?>alert.php">Alert</a>
@@ -29,13 +30,11 @@
             line-height: 1.6;
         }
 
-        /* Layout Structure */
         .app-container {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 200px;
             background: white;
@@ -77,39 +76,6 @@
             font-weight: 700;
         }
 
-        .sidebar-user {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .sidebar-user .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-user h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .sidebar-user p {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
         .sidebar-nav {
             padding: 1rem 0;
         }
@@ -147,7 +113,6 @@
             flex: 1;
         }
 
-        /* Main Content Area */
         .main-wrapper {
             flex: 1;
             margin-left: 201px;
@@ -158,7 +123,6 @@
             margin-left: 0;
         }
 
-        /* Header */
         .header {
             background: white;
             border-bottom: 1px solid #e2e8f0;
@@ -217,22 +181,6 @@
             gap: 1rem;
         }
 
-        /*.notification-btn {*/
-        /*    position: relative;*/
-        /*    background: #f7fafc;*/
-        /*    border: 1px solid #e2e8f0;*/
-        /*    padding: 8px;*/
-        /*    border-radius: 8px;*/
-        /*    color: #4a5568;*/
-        /*    cursor: pointer;*/
-        /*    transition: all 0.3s ease;*/
-        /*}*/
-
-        /*.notification-btn:hover {*/
-        /*    background: #0000FF;*/
-        /*    color: white;*/
-        /*}*/
-
         .notification-badge {
             position: absolute;
             top: -4px;
@@ -265,66 +213,70 @@
             transform: translateY(-1px);
         }
 
-        /* Main Content */
         .main-content {
             padding: 1rem;
-        } </style>
-<nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                <img src="<?php echo BASE_URL;?>/icon/schooladmin.jpg" alt="Logo">
-                    <h2>Admin</h2>
-                </div>
-                <!-- <div class="sidebar-user">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($username, 0, 2)); ?>
-                    </div>
-                    <h3><?php echo htmlspecialchars($username); ?></h3>
-                    <p>ID: <?php echo htmlspecialchars($driver_id ?? 'N/A'); ?></p>
-                </div> -->
-            </div>
+        }
+</style>
 
-           <div class="sidebar-nav">
-    <div class="nav-section">
-        <a href="<?php echo BASE_URL;?>dashboard.php" class="nav-item <?php echo isActivePage('dashboard.php'); ?>">
-            <i class="fas fa-tachometer-alt"></i>
-            <span class="nav-text">Dashboard</span>
-        </a>
-        
-        <a href="<?php echo BASE_URL;?>users.php" class="nav-item <?php echo isActivePage('users.php'); ?>">
-            <i class="fas fa-users"></i>
-            <span class="nav-text">Users</span>
-        </a>
-        
-        <!--<a href="completed_orders.php" class="nav-item <?php echo isActivePage('completed_orders.php'); ?>">-->
-        <!--    <i class="fas fa-check-circle"></i>-->
-        <!--    <span class="nav-text">Completed Orders</span>-->
-        <!--</a>-->
-         
-        <!--<a href="progress_orders.php" class="nav-item <?php echo isActivePage('progress_orders.php'); ?>">-->
-        <!--    <i class="fas fa-hourglass-half"></i>-->
-        <!--    <span class="nav-text">In-Progress Orders</span>-->
-        <!--</a>-->
-        
-        <a href="<?php echo BASE_URL;?>profile.php" class="nav-item <?php echo isActivePage('profile.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Profile</span>
-        </a>
-         <a href="<?php echo BASE_URL;?>organization/organization.php" class="nav-item <?php echo isActivePage('organization/organization.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Organization</span>
-            
-             <a href="<?php echo BASE_URL;?>students/students.php" class="nav-item <?php echo isActivePage('children.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Students</span>
-        </a>
-        
-         <a href="<?php echo BASE_URL;?>alert.php" class="nav-item <?php echo isActivePage('alert.php'); ?>">
-            <i class="fas fa-user-circle"></i>
-            <span class="nav-text">Alert</span>
-        </a>
-        
-        </a>
+<?php
+// Active page detection
+$currentPage = basename($_SERVER['PHP_SELF']);
+$currentDir  = basename(dirname($_SERVER['PHP_SELF']));
+?>
+
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <img src="<?php echo BASE_URL;?>/icon/schooladmin.jpg" alt="Logo">
+            <h2>Admin</h2>
+        </div>
     </div>
-</div>
+
+    <div class="sidebar-nav">
+        <div class="nav-section">
+
+            <a href="<?php echo BASE_URL;?>dashboard.php" 
+               class="nav-item <?php echo ($currentPage == 'dashboard.php') ? 'active' : ''; ?>">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>users.php" 
+               class="nav-item <?php echo ($currentPage == 'users.php' && $currentDir != 'eduUser') ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i>
+                <span class="nav-text">Users</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>eduUser/users.php" 
+               class="nav-item <?php echo ($currentDir == 'eduUser') ? 'active' : ''; ?>">
+                <i class="fas fa-user-tie"></i>
+                <span class="nav-text">Edu User</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>profile.php" 
+               class="nav-item <?php echo ($currentPage == 'profile.php') ? 'active' : ''; ?>">
+                <i class="fas fa-user-circle"></i>
+                <span class="nav-text">Profile</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>organization/organization.php" 
+               class="nav-item <?php echo ($currentPage == 'organization.php' && $currentDir == 'organization') ? 'active' : ''; ?>">
+                <i class="fas fa-building"></i>
+                <span class="nav-text">Organization</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>students/students.php" 
+               class="nav-item <?php echo ($currentPage == 'students.php' && $currentDir == 'students') ? 'active' : ''; ?>">
+                <i class="fas fa-user-graduate"></i>
+                <span class="nav-text">Students</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>alert.php" 
+               class="nav-item <?php echo ($currentPage == 'alert.php') ? 'active' : ''; ?>">
+                <i class="fas fa-bell"></i>
+                <span class="nav-text">Alert</span>
+            </a>
+
+        </div>
+    </div>
 </nav>

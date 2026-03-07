@@ -74,10 +74,10 @@ try {
 
     if ($search !== '') {
         $like = '%'.$search.'%';
-        $st = $conn->prepare("SELECT id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization WHERE name LIKE ? OR city LIKE ? OR state LIKE ? OR email LIKE ? OR phone LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $st = $conn->prepare("SELECT id,org_id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization WHERE name LIKE ? OR city LIKE ? OR state LIKE ? OR email LIKE ? OR phone LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
         $st->bind_param('sssssii',$like,$like,$like,$like,$like,$limit,$offset);
     } else {
-        $st = $conn->prepare("SELECT id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $st = $conn->prepare("SELECT id,org_id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization ORDER BY created_at DESC LIMIT ? OFFSET ?");
         $st->bind_param('ii',$limit,$offset);
     }
     $st->execute(); $res=$st->get_result();
@@ -297,6 +297,7 @@ $db->close();
                 <thead>
                     <tr>
                         <th>Organization</th>
+                        <th>Org ID</th>
                         <th>Phone</th>
                         <th>Actions</th>
                     </tr>
@@ -312,6 +313,15 @@ $db->close();
                                 <p><?php echo !empty($sc['address']) ? htmlspecialchars(substr($sc['address'],0,40)).'…' : 'No address'; ?></p>
                             </div>
                         </div>
+                    </td>
+                    <td>
+                        <?php if (!empty($sc['org_id'])): ?>
+                            <span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;">
+                                <?php echo htmlspecialchars($sc['org_id']); ?>
+                            </span>
+                        <?php else: ?>
+                            <span class="text-muted">—</span>
+                        <?php endif; ?>
                     </td>
                     <td><?php echo $sc['phone'] ? htmlspecialchars($sc['phone']) : '<span class="text-muted">—</span>'; ?></td>
                     <td>

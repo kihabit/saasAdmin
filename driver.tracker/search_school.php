@@ -1,11 +1,10 @@
 <?php
 /**
  * search_school.php
- * Aapke database se organization search karta hai
+ * Organization search - name, org_id, city, state return karta hai
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 $host   = '127.0.0.1';
 $dbname = 'u613073349_school';
@@ -26,18 +25,19 @@ try {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 
-    // ✅ Column name 'name' hai (school_name nahi)
     $stmt = $pdo->prepare("
         SELECT 
             id,
             name,
+            org_id,
             city,
             state
         FROM organization
         WHERE 
-            name  LIKE :q
-            OR city  LIKE :q
-            OR state LIKE :q
+            name   LIKE :q
+            OR org_id LIKE :q
+            OR city   LIKE :q
+            OR state  LIKE :q
         ORDER BY name ASC
         LIMIT 15
     ");
@@ -52,4 +52,3 @@ try {
     http_response_code(500);
     echo json_encode(['schools' => [], 'error' => $e->getMessage()]);
 }
-?>
