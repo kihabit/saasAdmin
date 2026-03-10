@@ -225,8 +225,9 @@
 $currentPage     = basename($_SERVER['PHP_SELF']);
 $currentDir      = basename(dirname($_SERVER['PHP_SELF']));
 $currentFullPath = $_SERVER['PHP_SELF'];
-$isFinUser       = (strpos($currentFullPath, 'finUser') !== false);
-$isEduUser       = (strpos($currentFullPath, 'eduUser') !== false);
+$isFinUser        = (strpos($currentFullPath, 'finUser') !== false);
+$isEduUser        = (strpos($currentFullPath, 'eduUser') !== false);
+$isVanRoute       = (strpos($currentFullPath, 'van_route') !== false);
 ?>
 
 <nav class="sidebar" id="sidebar">
@@ -286,6 +287,12 @@ $isEduUser       = (strpos($currentFullPath, 'eduUser') !== false);
                class="nav-item <?php echo ($currentPage == 'alert.php') ? 'active' : ''; ?>">
                 <i class="fas fa-bell"></i>
                 <span class="nav-text">Alert</span>
+            </a>
+
+            <a href="<?php echo BASE_URL;?>van_route/van_route_history.php" 
+               class="nav-item <?php echo $isVanRoute ? 'active' : ''; ?>">
+                <i class="fas fa-route"></i>
+                <span class="nav-text">Van Route</span>
             </a>
 
         </div>
