@@ -60,7 +60,7 @@ if (isset($_SESSION['message'])) {
     unset($_SESSION['message'], $_SESSION['messageType']);
 }
 
-$students = []; $totalChildren = 0; $totalActive = 0;
+$students = []; $totalChildren = 0; $totalActive = 0; $parentCount = 0;
 $page   = isset($_GET['page'])   ? max(1, intval($_GET['page'])) : 1;
 $limit  = 10; $offset = ($page - 1) * $limit;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -69,13 +69,13 @@ try {
     $whereClause = ''; $params = []; $types = '';
 
     if (!empty($search)) {
-        $whereClause = "WHERE c.name LIKE ? OR c.roll_number LIKE ? OR c.class LIKE ? OR c.section LIKE ? OR ul.firstName LIKE ? OR ul.lastName LIKE ?";
+        $whereClause = "WHERE c.name LIKE ? OR c.roll_number LIKE ? OR c.class LIKE ? OR c.section LIKE ?";
         $searchTerm  = '%' . $search . '%';
-        $params      = [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm];
-        $types       = 'ssssss';
+        $params      = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
+        $types       = 'ssss';
     }
 
-    $countSql = "SELECT COUNT(*) as total FROM students c LEFT JOIN user_login ul ON c.parent_id = ul.user_id $whereClause";
+    $countSql = "SELECT COUNT(*) as total FROM students c $whereClause";
     if ($whereClause) {
         $stmt = $conn->prepare($countSql); $stmt->bind_param($types, ...$params); $stmt->execute();
         $totalChildren = $stmt->get_result()->fetch_assoc()['total']; $stmt->close();
@@ -89,10 +89,9 @@ try {
     $sql = "SELECT c.id, c.organization_id, c.parent_id, c.driver_id, c.name, c.class, c.section,
                    c.roll_number, c.gender, c.dob, c.photo, c.pickup_address, c.drop_address,
                    c.pickup_lat, c.pickup_lng, c.status, c.created_at, c.updated_at,
-                   ul.firstName as parent_firstName, ul.lastName as parent_lastName,
-                   ul.username as parent_username, ul.email as parent_email, ul.phone_number as parent_phone
+                   NULL as parent_firstName, NULL as parent_lastName,
+                   NULL as parent_username, NULL as parent_email, NULL as parent_phone
             FROM students c
-            LEFT JOIN user_login ul ON c.parent_id = ul.user_id
             $whereClause
             ORDER BY c.created_at DESC
             LIMIT ? OFFSET ?";

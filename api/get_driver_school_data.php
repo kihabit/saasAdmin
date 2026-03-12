@@ -34,22 +34,24 @@ try {
 
     $organizationId = $data['organization_id'];
 
-    if (!empty($data['edu_user_id'])) {
+    if (!empty($data['user_id']) && !empty($data['user_type'])) {
 
-        $userId = $data['edu_user_id'];
-        $userTable = 'edu_user';
-        $userIdColumn = 'edu_user_id';
-        $locationsTable = 'edu_locations';
+        $userId = $data['user_id'];
 
-    } elseif (!empty($data['fnc_user_id'])) {
-
-        $userId = $data['fnc_user_id'];
-        $userTable = 'fin_user';
-        $userIdColumn = 'fnc_user_id';
-        $locationsTable = 'fin_locations';
+        if ($data['user_type'] === 'education') {
+            $userTable = 'edu_user';
+            $userIdColumn = 'user_id';
+            $locationsTable = 'edu_locations';
+        } elseif ($data['user_type'] === 'finance') {
+            $userTable = 'fin_user';
+            $userIdColumn = 'user_id';
+            $locationsTable = 'fin_locations';
+        } else {
+            throw new Exception("Invalid user_type. Use 'education' or 'finance'");
+        }
 
     } else {
-        throw new Exception("edu_user_id or fnc_user_id is required");
+        throw new Exception("user_id and user_type are required");
     }
 
     $stmt = $pdo->prepare("
@@ -110,10 +112,10 @@ try {
         exit;
     }
 
-  echo json_encode([
-    "status" => "success",
-    "data" => $result
-], JSON_PRETTY_PRINT);
+    echo json_encode([
+        "status" => "success",
+        "data" => $result
+    ], JSON_PRETTY_PRINT);
 
 } catch (Exception $e) {
 

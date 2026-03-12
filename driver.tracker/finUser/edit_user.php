@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $state        = trim($_POST['state']        ?? '');
     $country      = trim($_POST['country']      ?? '');
     $zipcode      = trim($_POST['zipcode']      ?? '');
-    $userType     = trim($_POST['userType']     ?? '');
+    $userType     = intval($_POST['userType']    ?? 0);
     $status       = trim($_POST['status']       ?? '');
 
     $organization_id   = !empty($_POST["organization_id"])   ? intval($_POST["organization_id"]) : null;
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
         try {
             $conn->begin_transaction();
             $stmt = $conn->prepare("UPDATE fin_user SET username=?,firstName=?,lastName=?,email=?,driverId=?,phone_number=?,address=?,city=?,state=?,country=?,zipcode=?,userType=?,status=?,organization_id=?,organization_name=? WHERE user_id=?");
-            $stmt->bind_param("sssssssssssssssi",$username,$firstName,$lastName,$email,$driverId,$phone_number,$address,$city,$state,$country,$zipcode,$userType,$status,$organization_id,$organization_name,$view_user_id);
+            $stmt->bind_param("sssssssssssisisi",$username,$firstName,$lastName,$email,$driverId,$phone_number,$address,$city,$state,$country,$zipcode,$userType,$status,$organization_id,$organization_name,$view_user_id);
             $stmt->execute(); $stmt->close();
 
             if (!empty($newPassword)) {
@@ -275,9 +275,13 @@ $db->close();
                     </div>
                     <?php endif; ?>
                     <?php if(!empty($user['userType'])): ?>
+                    <?php 
+                    $typeLabels = [1=>'Admin',2=>'Teacher',3=>'Staff',4=>'Driver',5=>'Student',6=>'Parent'];
+                    $typeLabel = $typeLabels[$user['userType']] ?? 'Unknown';
+                    ?>
                     <div class="info-item">
                         <span class="info-label">User Type</span>
-                        <span class="info-value">🏷️ <?php echo htmlspecialchars(ucfirst($user['userType'])); ?></span>
+                        <span class="info-value">🏷️ <?php echo htmlspecialchars($typeLabel); ?></span>
                     </div>
                     <?php endif; ?>
                     <?php if(!empty($user['status'])): ?>
@@ -377,8 +381,10 @@ $db->close();
                                     <label class="form-label"><i class="fas fa-user-tag"></i>User Type</label>
                                     <select name="userType" class="form-input">
                                         <option value="">-- Select Type --</option>
-                                        <?php foreach(['admin','driver','parent','student','teacher','staff'] as $t): ?>
-                                        <option value="<?php echo $t; ?>" <?php echo ($user['userType']??'')===$t?'selected':''; ?>><?php echo ucfirst($t); ?></option>
+                                        <?php 
+                                        $userTypes = [1=>'Admin',2=>'Teacher',3=>'Staff',4=>'Driver',5=>'Student',6=>'Parent'];
+                                        foreach($userTypes as $val => $label): ?>
+                                        <option value="<?php echo $val; ?>" <?php echo ($user['userType']??'')==$val?'selected':''; ?>><?php echo $label; ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
