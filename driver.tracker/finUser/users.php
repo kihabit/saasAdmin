@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         $_SESSION['messageType'] = 'error';
     } else {
         try {
-            $checkStmt = $conn->prepare("SELECT status FROM fnc_user WHERE fnc_user_id = ?");
+            $checkStmt = $conn->prepare("SELECT status FROM fin_user WHERE fnc_user_id = ?");
             $checkStmt->bind_param("i", $toggleUserId);
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
                     $_SESSION['messageType'] = 'error';
                 } else {
                     $conn->begin_transaction();
-                    $stmt = $conn->prepare("UPDATE fnc_user SET status = ? WHERE fnc_user_id = ?");
+                    $stmt = $conn->prepare("UPDATE fin_user SET status = ? WHERE fnc_user_id = ?");
                     if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
                     $stmt->bind_param("ii", $newStatusInt, $toggleUserId);
                     if ($stmt->execute()) {
@@ -105,18 +105,18 @@ if (isset($_POST['delete_user']) && isset($_POST['fnc_user_id'])) {
     } else {
         try {
             $conn->begin_transaction();
-            $stmt = $conn->prepare("SELECT username, email, driverId FROM fnc_user WHERE fnc_user_id = ?");
+            $stmt = $conn->prepare("SELECT username, email, driverId FROM fin_user WHERE fnc_user_id = ?");
             $stmt->bind_param("i", $deleteUserId);
             $stmt->execute();
             $result = $stmt->get_result();
             $deletedUser = $result->fetch_assoc();
             $stmt->close();
             if ($deletedUser) {
-                $stmt = $conn->prepare("UPDATE fnc_user SET token = NULL WHERE fnc_user_id = ?");
+                $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
-                $stmt = $conn->prepare("DELETE FROM fnc_user WHERE fnc_user_id = ?");
+                $stmt = $conn->prepare("DELETE FROM fin_user WHERE fnc_user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
@@ -168,7 +168,7 @@ try {
         $params = [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm];
         $types = 'sssss';
     }
-    $countSql = "SELECT COUNT(*) as total FROM fnc_user $whereClause";
+    $countSql = "SELECT COUNT(*) as total FROM fin_user $whereClause";
     if ($whereClause) {
         $stmt = $conn->prepare($countSql);
         $stmt->bind_param($types, ...$params);
@@ -180,7 +180,7 @@ try {
         $result = $conn->query($countSql);
         $totalUsers = $result->fetch_assoc()['total'];
     }
-    $statsSql = "SELECT COUNT(*) as total_active, COUNT(CASE WHEN driverId IS NOT NULL AND driverId != '' THEN 1 END) as active_drivers, COUNT(CASE WHEN created_at IS NOT NULL THEN 1 END) as recent_logins FROM fnc_user WHERE status = 1";
+    $statsSql = "SELECT COUNT(*) as total_active, COUNT(CASE WHEN driverId IS NOT NULL AND driverId != '' THEN 1 END) as active_drivers, COUNT(CASE WHEN created_at IS NOT NULL THEN 1 END) as recent_logins FROM fin_user WHERE status = 1";
     $statsResult = $conn->query($statsSql);
     if ($statsResult) {
         $statsData = $statsResult->fetch_assoc();
@@ -188,7 +188,7 @@ try {
         $totalActiveDrivers = $statsData['active_drivers'];
         $totalRecentLogins = $statsData['recent_logins'];
     }
-    $sql = "SELECT fnc_user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM fnc_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT fnc_user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM fin_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
     if ($whereClause) {
         $params[] = $limit; $params[] = $offset; $types .= 'ii';
         $stmt = $conn->prepare($sql);
@@ -212,7 +212,7 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE fnc_user SET token = NULL WHERE fnc_user_id = ?");
+            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
             $stmt->bind_param("i", $fnc_user_id);
             $stmt->execute();
             $stmt->close();

@@ -311,8 +311,8 @@ if (isset($_GET['logout'])) {
                             </div>
                         </div>
 
-                        <input type="hidden" id="school_id"   value="">
-                        <input type="hidden" id="school_name" value="">
+                        <input type="hidden" id="organization_id"   value="">
+                        <input type="hidden" id="organization_name" value="">
                         <input type="hidden" id="industry_id" value="">
 
                         <!-- Account Info -->
@@ -474,8 +474,8 @@ const orgBody  = document.getElementById('orgBody');
 const orgSpn   = document.getElementById('orgSpn');
 const orgBadge = document.getElementById('orgBadge');
 const orgBTx   = document.getElementById('orgBadgeTx');
-const orgIdH   = document.getElementById('school_id');
-const orgNmH   = document.getElementById('school_name');
+const orgIdH   = document.getElementById('organization_id');
+const orgNmH   = document.getElementById('organization_name');
 const orgIdD   = document.getElementById('orgIdDis');
 const orgNmD   = document.getElementById('orgNmDis');
 let selOrg=null, orgTmr=null, orgIdx=-1, orgRes=[];
@@ -685,8 +685,8 @@ document.getElementById('addUserForm').addEventListener('submit', async function
         firstName:   elFN.value.trim(),
         lastName:    elLN.value.trim(),
         role:        elRL.value,
-        school_id:   selOrg ? selOrg.id   : null,
-        school_name: selOrg ? selOrg.name : null,
+        organization_id:   selOrg ? selOrg.id   : null,
+        organization_name: selOrg ? selOrg.name : null,
         org_id:      selOrg ? (selOrg.org_id || selOrg.id) : null,
         email:       elEM.value.trim(),
         username:    elUN.value.trim(),

@@ -83,8 +83,8 @@ try {
     $zipcode      = $data['zipcode']      ?? '';
 
     // ── Organization ──
-    $school_id   = !empty($data['school_id'])   ? intval($data['school_id']) : null;
-    $school_name = !empty($data['school_name']) ? $data['school_name']       : null;
+    $organization_id   = !empty($data['organization_id'])   ? intval($data['organization_id']) : null;
+    $organization_name = !empty($data['organization_name']) ? $data['organization_name']       : null;
 
     // ── Role → userType (roles table ke hisab se) ──
     // 2=OrgAdmin, 3=BranchManager, 4=driver, 5=teacher, 6=parent
@@ -106,7 +106,7 @@ try {
     try {
         $sql = "INSERT INTO edu_user
                     (driverId, username, firstName, lastName, address, street, city, state, country,
-                     zipcode, phone_number, school_id, school_name, userType,
+                     zipcode, phone_number, organization_id, organization_name, userType,
                      latitude, longitude, password_hash, email, token, status, created_at)
                 VALUES
                     (?, ?, ?, ?, ?, ?, ?, ?, ?,
@@ -130,8 +130,8 @@ try {
             $country,           // s9
             $zipcode,           // s10
             $phone_number,      // s11
-            $school_id,         // i12
-            $school_name,       // s13
+            $organization_id,         // i12
+            $organization_name,       // s13
             $userType,          // i14
             $lat,               // d15
             $lng,               // d16
@@ -146,7 +146,7 @@ try {
         $stmt->close();
         $conn->commit();
 
-        error_log("New edu_user: {$data['username']} (ID:$userId, Org:$school_name, SchoolID:$school_id, userType:$userType)");
+        error_log("New edu_user: {$data['username']} (ID:$userId, Org:$organization_name, SchoolID:$organization_id, userType:$userType)");
 
         echo json_encode([
             'success' => true,
@@ -162,8 +162,8 @@ try {
                 'city'         => $city,
                 'role'         => $data['role'],
                 'userType'     => $userType,
-                'school_id'    => $school_id,
-                'school_name'  => $school_name
+                'organization_id'    => $organization_id,
+                'organization_name'  => $organization_name
             ]
         ]);
 

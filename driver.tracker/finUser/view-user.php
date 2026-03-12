@@ -20,10 +20,10 @@ $user = null;
 try {
     $stmt = $conn->prepare("SELECT u.fnc_user_id as fnc_user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
                              u.phone_number, u.address, u.city, u.state, u.country, u.zipcode,
-                             u.school_id, u.school_name, u.userType, u.status, u.created_at, u.last_login, u.latitude, u.longitude,
+                             u.organization_id, u.organization_name, u.userType, u.status, u.created_at, u.last_login, u.latitude, u.longitude,
                              o.org_id as org_custom_id
-                             FROM fnc_user u
-                             LEFT JOIN organization o ON o.id = u.school_id
+                             FROM fin_user u
+                             LEFT JOIN organization o ON o.id = u.organization_id
                              WHERE u.fnc_user_id = ?");
     $stmt->bind_param("i", $view_user_id);
     $stmt->execute();
@@ -40,7 +40,7 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE fnc_user SET token = NULL WHERE fnc_user_id = ?");
+            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
             $stmt->bind_param("i", $logged_user_id); $stmt->execute(); $stmt->close();
         } catch (Exception $e) { logAppError("Logout error: " . $e->getMessage()); }
     }
@@ -179,7 +179,7 @@ $roleName = $roleNames[$ut] ?? 'Unknown';
                         </div>
                     </div>
 
-                    <?php if (!empty($user['school_id']) || !empty($user['school_name'])): ?>
+                    <?php if (!empty($user['organization_id']) || !empty($user['organization_name'])): ?>
                     <div class="section-title"><i class="fas fa-building"></i> Organization</div>
                     <div class="info-grid">
                         <?php if (!empty($user['org_custom_id'])): ?>
@@ -187,16 +187,16 @@ $roleName = $roleNames[$ut] ?? 'Unknown';
                             <div class="info-label"><i class="fas fa-hashtag"></i> Org ID</div>
                             <div class="info-value"><?php echo htmlspecialchars($user['org_custom_id']); ?></div>
                         </div>
-                        <?php elseif (!empty($user['school_id'])): ?>
+                        <?php elseif (!empty($user['organization_id'])): ?>
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-hashtag"></i> Org ID</div>
-                            <div class="info-value"><?php echo htmlspecialchars($user['school_id']); ?></div>
+                            <div class="info-value"><?php echo htmlspecialchars($user['organization_id']); ?></div>
                         </div>
                         <?php endif; ?>
-                        <?php if (!empty($user['school_name'])): ?>
+                        <?php if (!empty($user['organization_name'])): ?>
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-school"></i> Org Name</div>
-                            <div class="info-value"><?php echo htmlspecialchars($user['school_name']); ?></div>
+                            <div class="info-value"><?php echo htmlspecialchars($user['organization_name']); ?></div>
                         </div>
                         <?php endif; ?>
                     </div>

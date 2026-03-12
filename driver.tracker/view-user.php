@@ -39,7 +39,7 @@ $view_user_id = intval($_GET['id']);
 // Fetch user details
 $user = null;
 try {
-   $stmt = $conn->prepare("SELECT user_id, driverId, username, firstName, lastName, email, created_at, last_login, school_id, school_name FROM user_login WHERE user_id = ?");
+   $stmt = $conn->prepare("SELECT user_id, driverId, username, firstName, lastName, email, created_at, last_login, organization_id, organization_name FROM user_login WHERE user_id = ?");
     $stmt->bind_param("i", $view_user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -745,23 +745,23 @@ $db->close();
     <div class="info-value">#<?php echo htmlspecialchars($user['user_id']); ?></div>
 </div>
 
-<?php if (!empty($user['school_id'])): ?>
+<?php if (!empty($user['organization_id'])): ?>
 <div class="info-item">
     <div class="info-label">
         <i class="fas fa-organization"></i>
         Organization ID
     </div>
-    <div class="info-value"><?php echo htmlspecialchars($user['school_id']); ?></div>
+    <div class="info-value"><?php echo htmlspecialchars($user['organization_id']); ?></div>
 </div>
 <?php endif; ?>
 
-<?php if (!empty($user['school_name'])): ?>
+<?php if (!empty($user['organization_name'])): ?>
 <div class="info-item">
     <div class="info-label">
         <i class="fas fa-organization"></i>
         Organization Name
     </div>
-    <div class="info-value"><?php echo htmlspecialchars($user['school_name']); ?></div>
+    <div class="info-value"><?php echo htmlspecialchars($user['organization_name']); ?></div>
 </div>
 <?php endif; ?>
                         </div>

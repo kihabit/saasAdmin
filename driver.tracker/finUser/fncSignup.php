@@ -41,8 +41,8 @@ try {
     date_default_timezone_set('Asia/Kolkata');
     $currentDateTime = date('Y-m-d H:i:s');
 
-    // ── Duplicate checks — fnc_user table ──
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fnc_user WHERE email = ?");
+    // ── Duplicate checks — fin_user table ──
+    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE email = ?");
     $stmt->bind_param("s", $data['email']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();
@@ -51,7 +51,7 @@ try {
     }
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fnc_user WHERE username = ?");
+    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE username = ?");
     $stmt->bind_param("s", $data['username']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();
@@ -60,7 +60,7 @@ try {
     }
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fnc_user WHERE phone_number = ?");
+    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE phone_number = ?");
     $stmt->bind_param("s", $data['phone_number']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();
@@ -83,8 +83,8 @@ try {
     $zipcode      = $data['zipcode']      ?? '';
 
     // ── Organization ──
-    $school_id   = !empty($data['school_id'])   ? intval($data['school_id']) : null;
-    $school_name = !empty($data['school_name']) ? $data['school_name']       : null;
+    $organization_id   = !empty($data['organization_id'])   ? intval($data['organization_id']) : null;
+    $organization_name = !empty($data['organization_name']) ? $data['organization_name']       : null;
 
     // ── Role → userType (roles table ke hisab se) ──
     // 2=OrgAdmin, 3=BranchManager, 4=driver, 5=teacher, 6=parent
@@ -104,9 +104,9 @@ try {
     $conn->begin_transaction();
 
     try {
-        $sql = "INSERT INTO fnc_user
+        $sql = "INSERT INTO fin_user
                     (driverId, username, firstName, lastName, address, street, city, state, country,
-                     zipcode, phone_number, school_id, school_name, userType,
+                     zipcode, phone_number, organization_id, organization_name, userType,
                      latitude, longitude, password_hash, email, token, status, created_at)
                 VALUES
                     (?, ?, ?, ?, ?, ?, ?, ?, ?,
@@ -116,7 +116,7 @@ try {
         $stmt = $conn->prepare($sql);
         if (!$stmt) { throw new Exception("Prepare failed: " . $conn->error); }
 
-        // 20 params: s(driverId) s(username) s(firstName) s(lastName) s(address) s(street) s(city) s(state) s(country) s(zipcode) s(phone_number) i(school_id) s(school_name) i(userType) d(lat) d(lng) s(passwordHash) s(email) s(token) s(created_at)
+        // 20 params: s(driverId) s(username) s(firstName) s(lastName) s(address) s(street) s(city) s(state) s(country) s(zipcode) s(phone_number) i(organization_id) s(organization_name) i(userType) d(lat) d(lng) s(passwordHash) s(email) s(token) s(created_at)
         $stmt->bind_param(
             "sssssssssssisiddssss",
             $driverId,          // s1
@@ -130,8 +130,8 @@ try {
             $country,           // s9
             $zipcode,           // s10
             $phone_number,      // s11
-            $school_id,         // i12
-            $school_name,       // s13
+            $organization_id,         // i12
+            $organization_name,       // s13
             $userType,          // i14
             $lat,               // d15
             $lng,               // d16
@@ -146,7 +146,7 @@ try {
         $stmt->close();
         $conn->commit();
 
-        error_log("New fnc_user: {$data['username']} (ID:$userId, Org:$school_name, SchoolID:$school_id, userType:$userType)");
+        error_log("New fin_user: {$data['username']} (ID:$userId, Org:$organization_name, SchoolID:$organization_id, userType:$userType)");
 
         echo json_encode([
             'success' => true,
@@ -162,8 +162,8 @@ try {
                 'city'         => $city,
                 'role'         => $data['role'],
                 'userType'     => $userType,
-                'school_id'    => $school_id,
-                'school_name'  => $school_name
+                'organization_id'    => $organization_id,
+                'organization_name'  => $organization_name
             ]
         ]);
 

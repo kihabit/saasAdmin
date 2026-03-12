@@ -40,12 +40,12 @@ try {
 $errors = [];
 $name = $class = $section = $roll_number = $gender = $dob = $status = '';
 $pickup_address = $drop_address = $pickup_lat = $pickup_lng = '';
-$school_id = $parent_id = $driver_id_val = '';
+$organization_id = $parent_id = $driver_id_val = '';
 
 // ── Handle POST ──
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name           = trim($_POST['name']           ?? '');
-    $school_id      = trim($_POST['school_id']      ?? '');
+    $organization_id      = trim($_POST['organization_id']      ?? '');
     $parent_id      = trim($_POST['parent_id']      ?? '');
     $driver_id_val  = trim($_POST['driver_id']      ?? '');
     $class          = trim($_POST['class']          ?? '');
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $sid  = !empty($school_id)     ? intval($school_id)    : null;
+            $sid  = !empty($organization_id)     ? intval($organization_id)    : null;
             $pid  = !empty($parent_id)     ? intval($parent_id)    : null;
             $did  = !empty($driver_id_val) ? $driver_id_val        : null;
             $dobv = !empty($dob)           ? $dob                  : null;
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $gen  = !empty($gender)        ? $gender               : null;
 
             $stmt = $conn->prepare("INSERT INTO students
-                (school_id, parent_id, driver_id, name, class, section, roll_number, gender, dob, pickup_address, drop_address, pickup_lat, pickup_lng, status)
+                (organization_id, parent_id, driver_id, name, class, section, roll_number, gender, dob, pickup_address, drop_address, pickup_lat, pickup_lng, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
          $stmt->bind_param("iisssssssssdds",
                 $sid, $pid, $did,
@@ -331,10 +331,10 @@ $db->close();
                                 <div class="form-group">
                                     <label class="form-label">School / Organization</label>
                                     <div class="iw"><i class="fas fa-building ii"></i>
-                                        <select name="school_id" class="fc">
+                                        <select name="organization_id" class="fc">
                                             <option value="">-- Select School --</option>
                                             <?php foreach ($organizations as $org): ?>
-                                            <option value="<?php echo $org['id']; ?>" <?php echo $school_id == $org['id'] ? 'selected' : ''; ?>>
+                                            <option value="<?php echo $org['id']; ?>" <?php echo $organization_id == $org['id'] ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($org['name']); ?> (<?php echo htmlspecialchars($org['org_id']); ?>)
                                             </option>
                                             <?php endforeach; ?>

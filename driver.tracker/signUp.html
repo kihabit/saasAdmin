@@ -230,8 +230,8 @@
         </div>
 
         <!-- Hidden fields -->
-        <input type="hidden" id="school_id" name="school_id" value="">
-        <input type="hidden" id="school_name" name="school_name" value="">
+        <input type="hidden" id="organization_id" name="organization_id" value="">
+        <input type="hidden" id="organization_name" name="organization_name" value="">
         <!-- ══════════════════ -->
 
         <!-- Account Info -->
@@ -391,8 +391,8 @@ const schoolSelectedText  = document.getElementById('schoolSelectedText');
 const clearSchoolBtn      = document.getElementById('clearSchool');
 const schoolIdDisplay     = document.getElementById('schoolIdDisplay');
 const schoolNameDisplay   = document.getElementById('schoolNameDisplay');
-const schoolIdHidden      = document.getElementById('school_id');
-const schoolNameHidden    = document.getElementById('school_name');
+const schoolIdHidden      = document.getElementById('organization_id');
+const schoolNameHidden    = document.getElementById('organization_name');
 
 let schoolSearchTimer = null;
 let selectedSchool    = null;
@@ -665,8 +665,8 @@ signupForm.addEventListener('submit', function(e) {
         lastName:     lastNameInput.value.trim(),
         name:         firstNameInput.value.trim() + ' ' + lastNameInput.value.trim(),
         role:         roleInput.value,
-        school_id:    selectedSchool ? selectedSchool.id   : null,
-        school_name:  selectedSchool ? selectedSchool.name : null,
+        organization_id:    selectedSchool ? selectedSchool.id   : null,
+        organization_name:  selectedSchool ? selectedSchool.name : null,
         email:        emailInput.value.trim(),
         username:     usernameInput.value.trim(),
         phone_number: phoneNumberInput.value.trim(),
@@ -691,7 +691,7 @@ signupForm.addEventListener('submit', function(e) {
         signupBtn.classList.remove('loading');
         signupBtn.textContent = 'Create Account';
         if (data.success) {
-            alert('🎉 ' + data.message + '\n\nWelcome ' + formData.name + '!\nUsername: ' + formData.username + '\nSchool: ' + formData.school_name + '\n\nPlease wait, admin will verify your account!');
+            alert('🎉 ' + data.message + '\n\nWelcome ' + formData.name + '!\nUsername: ' + formData.username + '\nSchool: ' + formData.organization_name + '\n\nPlease wait, admin will verify your account!');
             signupForm.reset();
             clearSchool();
             agreeTermsCheckbox.classList.remove('checked');
