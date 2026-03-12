@@ -46,7 +46,7 @@ try {
     SELECT 
         loc.id,
         loc.driverId,
-        loc.school_id,
+        loc.organization_id,
         loc.latitude,
         loc.longitude,
         loc.speed,
@@ -55,10 +55,10 @@ try {
         user_login.firstName,
         user_login.lastName,
         user_login.email
-    FROM locations AS loc
+    FROM edu_locations AS loc
     INNER JOIN (
         SELECT driverId, MAX(updated_at) AS max_updated
-        FROM locations
+        FROM edu_locations
         GROUP BY driverId
     ) AS latest_loc 
     ON loc.driverId = latest_loc.driverId

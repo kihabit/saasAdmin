@@ -74,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $confirmPassword = $_POST['confirm_password'] ?? '';
 
     // ✅ Organization fields
-    $school_id   = !empty($_POST['school_id'])   ? intval($_POST['school_id']) : null;
-    $school_name = !empty($_POST['school_name']) ? trim($_POST['school_name']) : null;
+    $organization_id   = !empty($_POST['organization_id'])   ? intval($_POST['organization_id']) : null;
+    $organization_name = !empty($_POST['organization_name']) ? trim($_POST['organization_name']) : null;
 
     $userErrors = [];
     if (empty($username)) $userErrors[] = 'Username is required.';
@@ -106,9 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     if (empty($userErrors)) {
         try {
             $conn->begin_transaction();
-            // ✅ school_id aur school_name bhi update
-            $stmt = $conn->prepare("UPDATE user_login SET username=?,firstName=?,lastName=?,email=?,driverId=?,school_id=?,school_name=? WHERE user_id=?");
-            $stmt->bind_param("sssssisi",$username,$firstName,$lastName,$email,$driverId,$school_id,$school_name,$view_user_id);
+            // ✅ organization_id aur organization_name bhi update
+            $stmt = $conn->prepare("UPDATE user_login SET username=?,firstName=?,lastName=?,email=?,driverId=?,organization_id=?,organization_name=? WHERE user_id=?");
+            $stmt->bind_param("sssssisi",$username,$firstName,$lastName,$email,$driverId,$organization_id,$organization_name,$view_user_id);
             $stmt->execute(); $stmt->close();
 
             if (!empty($newPassword)) {
@@ -131,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
 // ── Fetch user ────────────────────────────────────────────────────────────
 $user = null;
 try {
-    // ✅ school_id aur school_name bhi fetch
-    $stmt = $conn->prepare("SELECT user_id,driverId,username,firstName,lastName,email,created_at,last_login,school_id,school_name FROM user_login WHERE user_id=?");
+    // ✅ organization_id aur organization_name bhi fetch
+    $stmt = $conn->prepare("SELECT user_id,driverId,username,firstName,lastName,email,created_at,last_login,organization_id,organization_name FROM user_login WHERE user_id=?");
     $stmt->bind_param("i",$view_user_id); $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc(); $stmt->close();
     if (!$user) { setFlashMessage('error','User not found.'); redirect('users.php'); }
@@ -358,10 +358,10 @@ $db->close();
                         <span class="info-label">Last Login</span>
                         <span class="info-value"><?php echo !empty($user['last_login'])?date('M j, Y g:i A',strtotime($user['last_login'])):'Never'; ?></span>
                     </div>
-                    <?php if(!empty($user['school_name'])): ?>
+                    <?php if(!empty($user['organization_name'])): ?>
                     <div class="info-item">
                         <span class="info-label">Current Organization</span>
-                        <span class="info-value" style="color:#0000FF;">🏫 <?php echo htmlspecialchars($user['school_name']); ?> (ID: <?php echo $user['school_id']; ?>)</span>
+                        <span class="info-value" style="color:#0000FF;">🏫 <?php echo htmlspecialchars($user['organization_name']); ?> (ID: <?php echo $user['organization_id']; ?>)</span>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -412,7 +412,7 @@ $db->close();
                                     <input type="text" id="schoolSearch" class="form-input"
                                         placeholder="Type organization name to search..."
                                         autocomplete="off"
-                                        value="<?php echo htmlspecialchars($user['school_name']??''); ?>">
+                                        value="<?php echo htmlspecialchars($user['organization_name']??''); ?>">
                                     <span id="schoolSpinner" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);">
                                         <span style="display:inline-block;width:14px;height:14px;border:2px solid #94a3b8;border-top-color:#0000FF;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
                                     </span>
@@ -421,9 +421,9 @@ $db->close();
                                         <div id="schoolDropdownBody"></div>
                                     </div>
                                 </div>
-                                <div class="organization-selected-badge <?php echo !empty($user['school_name'])?'show':''; ?>" id="schoolSelectedBadge">
+                                <div class="organization-selected-badge <?php echo !empty($user['organization_name'])?'show':''; ?>" id="schoolSelectedBadge">
                                     <span>✅</span>
-                                    <span id="schoolSelectedText"><?php echo !empty($user['school_name'])?htmlspecialchars($user['school_name']).' | ID: '.$user['school_id']:''; ?></span>
+                                    <span id="schoolSelectedText"><?php echo !empty($user['organization_name'])?htmlspecialchars($user['organization_name']).' | ID: '.$user['organization_id']:''; ?></span>
                                     <button type="button" class="badge-clear" id="clearSchool">✕ Clear</button>
                                 </div>
                             </div>
@@ -432,17 +432,17 @@ $db->close();
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-id-badge"></i>Organization ID</label>
                                     <input type="text" id="schoolIdDisplay" class="form-input organization-readonly" readonly
-                                        value="<?php echo htmlspecialchars($user['school_id']??''); ?>" placeholder="Auto-filled">
+                                        value="<?php echo htmlspecialchars($user['organization_id']??''); ?>" placeholder="Auto-filled">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-organization"></i>Organization Name</label>
                                     <input type="text" id="schoolNameDisplay" class="form-input organization-readonly" readonly
-                                        value="<?php echo htmlspecialchars($user['school_name']??''); ?>" placeholder="Auto-filled">
+                                        value="<?php echo htmlspecialchars($user['organization_name']??''); ?>" placeholder="Auto-filled">
                                 </div>
                             </div>
 
-                            <input type="hidden" name="school_id"   id="school_id_hidden"   value="<?php echo htmlspecialchars($user['school_id']??''); ?>">
-                            <input type="hidden" name="school_name" id="school_name_hidden" value="<?php echo htmlspecialchars($user['school_name']??''); ?>">
+                            <input type="hidden" name="organization_id"   id="school_id_hidden"   value="<?php echo htmlspecialchars($user['organization_id']??''); ?>">
+                            <input type="hidden" name="organization_name" id="school_name_hidden" value="<?php echo htmlspecialchars($user['organization_name']??''); ?>">
                         </div>
                         <!-- ✅ END SCHOOL SECTION -->
 

@@ -86,7 +86,7 @@ try {
     $activeResult = $conn->query("SELECT COUNT(*) as total FROM students WHERE status = 'active'");
     if ($activeResult) $totalActive = $activeResult->fetch_assoc()['total'];
 
-    $sql = "SELECT c.id, c.school_id, c.parent_id, c.driver_id, c.name, c.class, c.section,
+    $sql = "SELECT c.id, c.organization_id, c.parent_id, c.driver_id, c.name, c.class, c.section,
                    c.roll_number, c.gender, c.dob, c.photo, c.pickup_address, c.drop_address,
                    c.pickup_lat, c.pickup_lng, c.status, c.created_at, c.updated_at,
                    ul.firstName as parent_firstName, ul.lastName as parent_lastName,

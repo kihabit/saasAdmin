@@ -69,8 +69,8 @@ try {
     $zipcode      = $data['zipcode']      ?? '';
 
     // Organization fields
-    $school_id   = !empty($data['school_id'])   ? intval($data['school_id']) : null;
-    $school_name = !empty($data['school_name']) ? $data['school_name']       : null;
+    $organization_id   = !empty($data['organization_id'])   ? intval($data['organization_id']) : null;
+    $organization_name = !empty($data['organization_name']) ? $data['organization_name']       : null;
 
     $roleMap  = ['school_admin'=>2, 'school_staff'=>3, 'driver'=>4, 'teacher'=>5, 'parent'=>6];
     $userType = $roleMap[$data['role']] ?? 2;
@@ -87,14 +87,14 @@ try {
         $sql = "INSERT INTO user_login 
             (driverId, username, firstName, lastName, address, phone_number, 
              street, city, state, country, zipcode, userType, password_hash, 
-             email, token, status, created_at, latitude, longitude, school_id, school_name) 
+             email, token, status, created_at, latitude, longitude, organization_id, organization_name) 
             VALUES 
             (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) { throw new Exception("Prepare failed: " . $conn->error); }
 
-        // 20 params — types: 11 strings, 1 int (userType), 3 strings, 1 string (created_at), 2 strings (lat/lng), 1 int (school_id), 1 string (school_name)
+        // 20 params — types: 11 strings, 1 int (userType), 3 strings, 1 string (created_at), 2 strings (lat/lng), 1 int (organization_id), 1 string (organization_name)
         $stmt->bind_param(
            "sssssssssssisssssiss",
             $driverId,        // s1
@@ -115,8 +115,8 @@ try {
             $currentDateTime,  // s16
             $lat,              // s17
             $lng,              // s18
-            $school_id,        // i19
-            $school_name       // s20
+            $organization_id,        // i19
+            $organization_name       // s20
         );
         
         $stmt->execute();
@@ -124,7 +124,7 @@ try {
         $stmt->close();
         $conn->commit();
         
-        logAppError("New user registered: {$data['username']} (ID:$userId, Organization:$school_name, SchoolID:$school_id)");
+        logAppError("New user registered: {$data['username']} (ID:$userId, Organization:$organization_name, SchoolID:$organization_id)");
         
         echo json_encode([
             'success' => true,
@@ -140,8 +140,8 @@ try {
                 'city'        => $city,
                 'role'        => $data['role'],
                 'userType'    => $userType,
-                'school_id'   => $school_id,
-                'school_name' => $school_name
+                'organization_id'   => $organization_id,
+                'organization_name' => $organization_name
             ]
         ]);
         

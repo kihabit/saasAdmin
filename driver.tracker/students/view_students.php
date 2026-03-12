@@ -33,13 +33,13 @@ try {
                ul.username     AS parent_username,
                ul.email        AS parent_email,
                ul.phone_number AS parent_phone,
-               s.name          AS school_name,
+               s.name          AS organization_name,
                s.address       AS school_address,
                s.city          AS school_city,
                s.state         AS school_state
         FROM students c
         LEFT JOIN user_login  ul ON c.parent_id = ul.user_id
-        LEFT JOIN organization s  ON c.school_id = s.id
+        LEFT JOIN organization s  ON c.organization_id = s.id
         WHERE c.id = ?
     ");
     $stmt->bind_param("i", $child_id); $stmt->execute();
@@ -386,7 +386,7 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
         </div>
 
         <!-- School Info -->
-        <?php if (!empty($child['school_name'])): ?>
+        <?php if (!empty($child['organization_name'])): ?>
         <div class="section-card">
             <div class="section-card-header">
                 <i class="fas fa-building"></i>
@@ -396,7 +396,7 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label"><i class="fas fa-building"></i> Organization Name</div>
-                        <div class="info-value"><?php echo htmlspecialchars($child['school_name']); ?></div>
+                        <div class="info-value"><?php echo htmlspecialchars($child['organization_name']); ?></div>
                     </div>
                     <?php if (!empty($child['school_address'])): ?>
                     <div class="info-item">
@@ -412,7 +412,7 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
                     <?php endif; ?>
                     <div class="info-item">
                         <div class="info-label"><i class="fas fa-hashtag"></i> Organization ID</div>
-                        <div class="info-value">#<?php echo $child['school_id']; ?></div>
+                        <div class="info-value">#<?php echo $child['organization_id']; ?></div>
                     </div>
                 </div>
             </div>

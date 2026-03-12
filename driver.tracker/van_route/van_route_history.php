@@ -24,7 +24,7 @@ $driver_id = $_SESSION['driver_id'] ?? null;
 
 // ── Filters ───────────────────────────────────────────────────────────────────
 $selected_driver = isset($_GET['driver_id']) ? trim($_GET['driver_id']) : '';
-$selected_school = isset($_GET['school_id']) ? trim($_GET['school_id']) : '';
+$selected_school = isset($_GET['organization_id']) ? trim($_GET['organization_id']) : '';
 $selected_date   = isset($_GET['date'])       ? trim($_GET['date'])       : '';
 $days_back       = isset($_GET['days'])       ? max(1, min(7, intval($_GET['days']))) : 2;
 
@@ -38,11 +38,11 @@ $driverQuery = "
             CONCAT(eu.firstName, ' ', eu.lastName),
             vrh.driver_id
         ) AS driver_name,
-        COALESCE(fu.school_name, eu.school_name, '') AS org_name,
-        COALESCE(fu.school_id,   eu.school_id,   0)  AS user_school_id
+        COALESCE(fu.organization_name, eu.organization_name, '') AS org_name,
+        COALESCE(fu.organization_id,   eu.organization_id,   0)  AS user_school_id
     FROM van_route_history vrh
     LEFT JOIN user_login ul ON ul.driverId  = vrh.driver_id
-    LEFT JOIN fnc_user   fu ON fu.driverId  = vrh.driver_id
+    LEFT JOIN fin_user   fu ON fu.driverId  = vrh.driver_id
     LEFT JOIN edu_user   eu ON eu.driverId  = vrh.driver_id
     ORDER BY driver_name ASC
 ";
@@ -62,7 +62,7 @@ foreach ($drivers as $d) {
     $name = $d['org_name'];
     if ($key && $key != 0 && !empty($name) && !in_array($key, $seenSchools)) {
         $seenSchools[] = $key;
-        $schools[] = ['school_id' => $key, 'school_name' => $name];
+        $schools[] = ['organization_id' => $key, 'organization_name' => $name];
     }
 }
 
@@ -77,7 +77,7 @@ if ($selected_driver !== '') {
     $bindValues[] = $selected_driver;
 }
 if ($selected_school !== '') {
-    $whereConditions[] = "(fu.school_id = ? OR eu.school_id = ?)";
+    $whereConditions[] = "(fu.organization_id = ? OR eu.organization_id = ?)";
     $bindTypes  .= "ii";
     $bindValues[] = intval($selected_school);
     $bindValues[] = intval($selected_school);
@@ -93,7 +93,7 @@ $whereSQL = implode(" AND ", $whereConditions);
 $routePoints = [];
 $sql = "
     SELECT
-        vrh.id, vrh.driver_id, vrh.school_id,
+        vrh.id, vrh.driver_id, vrh.organization_id,
         vrh.latitude, vrh.longitude, vrh.speed, vrh.sos, vrh.recorded_at,
         COALESCE(
             CONCAT(ul.firstName, ' ', ul.lastName),
@@ -101,11 +101,11 @@ $sql = "
             CONCAT(eu.firstName, ' ', eu.lastName),
             vrh.driver_id
         ) AS driver_name,
-        COALESCE(fu.school_name, eu.school_name, vrh.school_id) AS school_name,
+        COALESCE(fu.organization_name, eu.organization_name, vrh.organization_id) AS organization_name,
         COALESCE(fu.van_number,  eu.van_number,  '') AS van_number
     FROM van_route_history vrh
     LEFT JOIN user_login ul ON ul.driverId  = vrh.driver_id
-    LEFT JOIN fnc_user   fu ON fu.driverId  = vrh.driver_id
+    LEFT JOIN fin_user   fu ON fu.driverId  = vrh.driver_id
     LEFT JOIN edu_user   eu ON eu.driverId  = vrh.driver_id
     WHERE $whereSQL
     ORDER BY vrh.driver_id, vrh.recorded_at ASC
@@ -355,12 +355,12 @@ $db->close();
                         </div>
                         <div class="filter-group">
                             <label>Organization</label>
-                            <select name="school_id">
+                            <select name="organization_id">
                                 <option value="">All Organizations</option>
                                 <?php foreach ($schools as $s): ?>
-                                <option value="<?php echo htmlspecialchars($s['school_id']); ?>"
-                                    <?php echo $selected_school == $s['school_id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($s['school_name']); ?>
+                                <option value="<?php echo htmlspecialchars($s['organization_id']); ?>"
+                                    <?php echo $selected_school == $s['organization_id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($s['organization_name']); ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
@@ -427,7 +427,7 @@ $db->close();
                                     <span class="driver-badge"><?php echo htmlspecialchars($pt['driver_name']); ?></span>
                                     <div style="font-size:.68rem;color:#9ca3af;margin-top:1px"><?php echo htmlspecialchars($pt['driver_id']); ?></div>
                                 </td>
-                                <td style="font-size:.75rem;color:#4a5568"><?php echo htmlspecialchars($pt['school_name']); ?></td>
+                                <td style="font-size:.75rem;color:#4a5568"><?php echo htmlspecialchars($pt['organization_name']); ?></td>
                                 <td style="font-size:.75rem;color:#4a5568"><?php echo htmlspecialchars($pt['van_number']) ?: '—'; ?></td>
                                 <td><span class="speed-pill <?php echo $sc; ?>"><?php echo $sl; ?></span></td>
                                 <td>
@@ -513,7 +513,7 @@ function initMap() {
                 content: `<div style="font-family:'Inter',sans-serif;font-size:12px;line-height:1.8;min-width:190px">
                     <b style="font-size:13px;color:#0000FF">${pt.driver_name || driverId}</b>
                     <span style="color:#9ca3af;font-size:11px"> (${driverId})</span><br>
-                    🏢 ${pt.school_name || ''}<br>
+                    🏢 ${pt.organization_name || ''}<br>
                     🚐 Van: ${pt.van_number || '—'}<br>
                     🚗 Speed: <b>${pt.speed} km/h</b><br>
                     🕐 ${pt.recorded_at}

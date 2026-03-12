@@ -23,8 +23,8 @@ $totalSchools = 0; $totalWithPhone = 0; $totalWithEmail = 0; $filteredTotal = 0;
 $schools = [];
 
 /* Delete */
-if (isset($_POST['delete_school'], $_POST['school_id'])) {
-    $delId = intval($_POST['school_id']);
+if (isset($_POST['delete_school'], $_POST['organization_id'])) {
+    $delId = intval($_POST['organization_id']);
     try {
         $conn->begin_transaction();
         $st = $conn->prepare("SELECT name FROM organization WHERE id = ?");
@@ -403,7 +403,7 @@ $db->close();
         <div class="modal-actions">
             <button type="button" class="btn-cancel" onclick="hideDeleteModal()">Cancel</button>
             <form method="POST" style="display:inline">
-                <input type="hidden" name="school_id" id="deleteSchoolId">
+                <input type="hidden" name="organization_id" id="deleteSchoolId">
                 <button type="submit" name="delete_school" class="btn-confirm-delete">Delete Organization</button>
             </form>
         </div>

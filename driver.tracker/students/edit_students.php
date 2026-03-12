@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gender         = trim($_POST['gender']         ?? '');
     $dob            = trim($_POST['dob']            ?? '');
     $status         = trim($_POST['status']         ?? 'active');
-    $school_id      = intval($_POST['school_id']    ?? 0) ?: null;
+    $organization_id      = intval($_POST['organization_id']    ?? 0) ?: null;
     $parent_id      = intval($_POST['parent_id']    ?? 0) ?: null;
     $driver_id_val  = trim($_POST['driver_id']      ?? '') ?: null;
     $pickup_address = trim($_POST['pickup_address'] ?? '');
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("
                 UPDATE students SET
                     name=?, class=?, section=?, roll_number=?, gender=?, dob=?,
-                    status=?, school_id=?, parent_id=?, driver_id=?,
+                    status=?, organization_id=?, parent_id=?, driver_id=?,
                     pickup_address=?, drop_address=?, pickup_lat=?, pickup_lng=?,
                     photo=?, updated_at=NOW()
                 WHERE id=?
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param(
                 'sssssssiissssssi',
                 $name, $class, $section, $roll_number, $gender, $dob,
-                $status, $school_id, $parent_id, $driver_id_val,
+                $status, $organization_id, $parent_id, $driver_id_val,
                 $pickup_address, $drop_address, $pickup_lat, $pickup_lng,
                 $photo, $child_id
             );
@@ -395,11 +395,11 @@ textarea.form-control{resize:vertical;min-height:75px}
 
                         <div class="form-group">
                             <label><i class="fas fa-building" style="color:#0000FF;font-size:.78rem;"></i> Organization</label>
-                            <select name="school_id" class="form-control">
+                            <select name="organization_id" class="form-control">
                                 <option value="">— No Organization —</option>
                                 <?php foreach ($schools as $s): ?>
                                 <option value="<?php echo $s['id']; ?>"
-                                    <?php echo ($child['school_id'] == $s['id']) ? 'selected' : ''; ?>>
+                                    <?php echo ($child['organization_id'] == $s['id']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($s['name']); ?>
                                 </option>
                                 <?php endforeach; ?>
