@@ -15,3 +15,5 @@ RENAME TABLE `u613073349_school`.`van_route_history` TO `u613073349_school`.`edu
 CREATE TABLE fin_route_history LIKE edu_route_history;
 ALTER TABLE `fin_route_history` CHANGE `edu_id` `fin_id` VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
 INSERT INTO `roles` (`id`, `role_name`, `prt`, `created_at`) VALUES (NULL, 'manager', '0', CURRENT_TIMESTAMP);
+ALTER TABLE `edu_locations` CHANGE `school_id` `organization_id` VARCHAR(20) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `edu_user` CHANGE `notification_token` `notification_token` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
