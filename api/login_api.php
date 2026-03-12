@@ -49,7 +49,7 @@ $cat = $conn->real_escape_string(trim(strtolower($data->cat)));
 $tableName = $cat."_user";
 // *** CRITICAL FIX: Query user by username AND include status field ***
 $sql = "SELECT user_id, email,userType, organization_id, van_number, username, password_hash, status FROM ".$tableName." WHERE username = ?";
-echo $sql;
+
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {

@@ -50,7 +50,7 @@ try {
         echo json_encode(["status" => "success", "message" => "Driver stopped"]);
         exit;
     }
-
+    $tableName = $data['cat']."_user";
     $driverRo = $pdo->prepare("SELECT notification_sent from edu_locations where driverId=? and organization_id=?");
     $driverRo->execute([$data['driverId'], $data['organization_id']]);
     $driverRow = $driverRo->fetch();
