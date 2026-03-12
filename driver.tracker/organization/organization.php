@@ -1,0 +1,446 @@
+<?php
+session_start();
+require_once '../config.php';
+
+if (!isLoggedIn()) { redirect(LOGIN_PAGE); }
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > SESSION_LIFETIME) {
+    session_unset(); session_destroy();
+    setFlashMessage('error', 'Your session has expired. Please login again.');
+    redirect(LOGIN_PAGE);
+}
+$_SESSION['last_activity'] = time();
+
+$db   = Database::getInstance();
+$conn = $db->getConnection();
+
+$user_id   = $_SESSION['user_id']   ?? 0;
+$username  = $_SESSION['username']  ?? '';
+$driver_id = $_SESSION['driver_id'] ?? null;
+
+$message = ''; $messageType = '';
+$totalSchools = 0; $totalWithPhone = 0; $totalWithEmail = 0; $filteredTotal = 0;
+$schools = [];
+
+/* Delete */
+if (isset($_POST['delete_school'], $_POST['school_id'])) {
+    $delId = intval($_POST['school_id']);
+    try {
+        $conn->begin_transaction();
+        $st = $conn->prepare("SELECT name FROM organization WHERE id = ?");
+        $st->bind_param("i", $delId); $st->execute();
+        $row = $st->get_result()->fetch_assoc(); $st->close();
+        if ($row) {
+            $st = $conn->prepare("DELETE FROM organization WHERE id = ?");
+            $st->bind_param("i", $delId); $st->execute(); $st->close();
+            $conn->commit();
+            logAppError("Organization deleted: {$row['name']} (ID:$delId) by $username");
+            $_SESSION['message'] = "Organization '{$row['name']}' deleted successfully.";
+            $_SESSION['messageType'] = 'success';
+        } else {
+            $_SESSION['message'] = 'Organization not found.'; $_SESSION['messageType'] = 'error';
+        }
+    } catch (Exception $e) {
+        $conn->rollback();
+        $_SESSION['message'] = 'Error deleting organization.'; $_SESSION['messageType'] = 'error';
+    }
+    $qs = [];
+    if (!empty($_GET['page']))   $qs[] = 'page='   . intval($_GET['page']);
+    if (!empty($_GET['search'])) $qs[] = 'search=' . urlencode($_GET['search']);
+    header('Location: organization.php' . ($qs ? '?' . implode('&', $qs) : '')); exit();
+}
+
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message']; $messageType = $_SESSION['messageType'];
+    unset($_SESSION['message'], $_SESSION['messageType']);
+}
+
+$page   = max(1, intval($_GET['page']   ?? 1));
+$limit  = 10; $offset = ($page - 1) * $limit;
+$search = trim($_GET['search'] ?? '');
+
+try {
+    $res = $conn->query("SELECT COUNT(*) AS total,
+        COUNT(CASE WHEN phone IS NOT NULL AND phone!='' THEN 1 END) AS wp,
+        COUNT(CASE WHEN email IS NOT NULL AND email!='' THEN 1 END) AS we FROM organization");
+    if ($res) { $s=$res->fetch_assoc(); $totalSchools=(int)$s['total']; $totalWithPhone=(int)$s['wp']; $totalWithEmail=(int)$s['we']; }
+
+    if ($search !== '') {
+        $like = '%'.$search.'%';
+        $st = $conn->prepare("SELECT COUNT(*) AS total FROM organization WHERE name LIKE ? OR city LIKE ? OR state LIKE ? OR email LIKE ? OR phone LIKE ?");
+        $st->bind_param('sssss',$like,$like,$like,$like,$like); $st->execute();
+        $filteredTotal = (int)$st->get_result()->fetch_assoc()['total']; $st->close();
+    } else { $filteredTotal = $totalSchools; }
+
+    if ($search !== '') {
+        $like = '%'.$search.'%';
+        $st = $conn->prepare("SELECT id,org_id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization WHERE name LIKE ? OR city LIKE ? OR state LIKE ? OR email LIKE ? OR phone LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $st->bind_param('sssssii',$like,$like,$like,$like,$like,$limit,$offset);
+    } else {
+        $st = $conn->prepare("SELECT id,org_id,name,address,city,state,postal_code,phone,email,latitude,longitude,created_at FROM organization ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $st->bind_param('ii',$limit,$offset);
+    }
+    $st->execute(); $res=$st->get_result();
+    while ($r=$res->fetch_assoc()) $schools[]=$r;
+    $st->close();
+} catch (Exception $e) { logAppError("organization.php: ".$e->getMessage()); }
+
+$totalPages = $filteredTotal > 0 ? (int)ceil($filteredTotal/$limit) : 1;
+
+if (isset($_GET['logout'])) {
+    if (isset($_COOKIE['remember_login'])) {
+        setcookie('remember_login','',time()-3600,COOKIE_PATH,COOKIE_DOMAIN,COOKIE_SECURE,COOKIE_HTTPONLY);
+        try { $st=$conn->prepare("DELETE FROM user_remember_tokens WHERE user_id=?"); $st->bind_param("i",$user_id); $st->execute(); $st->close(); } catch(Exception $e){}
+    }
+    session_unset(); session_destroy(); redirect(LOGIN_PAGE);
+}
+$db->close();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizations - <?php echo APP_NAME; ?></title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #1a202c; line-height: 1.6; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #0000FF, #4169E1); color: white; }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .sidebar-logo img { width: 36px; height: 36px; border-radius: 8px; }
+        .sidebar-logo h2 { font-size: 1.3rem; font-weight: 700; }
+        .sidebar-user { margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(10px); }
+        .sidebar-user .user-avatar { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; margin-bottom: 0.5rem; }
+        .sidebar-user h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .sidebar-user p { font-size: 0.85rem; opacity: 0.8; }
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-item { display: flex; padding: 0.75rem 1.5rem; color: #4a5568; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; align-items: center; gap: 12px; }
+        .nav-item:hover, .nav-item.active { background: #f7fafc; color: #0000FF; border-left-color: #0000FF; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+        .nav-item .nav-text { flex: 1; }
+        .main-wrapper { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
+        .header { background: white; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .menu-toggle { background: none; border: none; font-size: 1.2rem; color: #4a5568; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.3s ease; display: none; }
+        .menu-toggle:hover { background: #f7fafc; color: #0000FF; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; color: #718096; font-size: 0.9rem; }
+        .breadcrumb a { color: #0000FF; text-decoration: none; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 500; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .logout-btn:hover { background: #c82333; transform: translateY(-1px); }
+        .main-content { padding: 1.5rem 2rem; }
+
+        /* ── Page Header ── */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .page-title h1 { font-size: 1.35rem; font-weight: 700; color: #1a202c; margin-bottom: 2px; }
+        .page-title p { color: #718096; font-size: 0.82rem; }
+        .page-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .search-box { position: relative; min-width: 260px; }
+        .search-input { width: 100%; padding: 9px 14px 9px 38px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; transition: all 0.3s ease; font-family: inherit; }
+        .search-input:focus { outline: none; border-color: #0000FF; box-shadow: 0 0 0 3px rgba(0,0,255,0.1); }
+        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.8rem; }
+        .btn-primary { background: #0000FF; color: white; border: none; padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap; }
+        .btn-primary:hover { background: #0000CC; transform: translateY(-1px); }
+
+        /* ── Messages ── */
+        .message-container { margin-bottom: 1.25rem; }
+        .message { padding: 0.85rem 1.25rem; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 0.9rem; animation: slideIn 0.3s ease; }
+        .message.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* ── Card ── */
+        .schools-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 1.5rem; }
+        .card-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 1rem; font-weight: 600; color: #1a202c; display: flex; align-items: center; gap: 8px; }
+        .schools-count { background: #0000FF; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+
+        /* ── Table ── */
+        .schools-table { width: 100%; border-collapse: collapse; }
+        .schools-table th, .schools-table td { padding: 13px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .schools-table th { background: #f8fafc; font-weight: 600; color: #4a5568; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .schools-table td { font-size: 0.9rem; }
+        .schools-table tbody tr:hover { background: #f8fafc; }
+        .organization-info { display: flex; align-items: center; gap: 10px; }
+        .organization-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0000FF, #4169E1); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+        .organization-details h4 { font-weight: 600; color: #1a202c; margin-bottom: 1px; font-size: 0.9rem; }
+        .organization-details p { font-size: 0.78rem; color: #718096; }
+        .text-muted { color: #9ca3af; }
+
+        /* ── Action Buttons (compact) ── */
+        .actions { display: flex; gap: 5px; align-items: center; }
+        .btn-sm { padding: 5px 10px; border-radius: 7px; font-size: 0.75rem; border: none; cursor: pointer; transition: all 0.25s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; font-weight: 500; white-space: nowrap; }
+        .btn-view   { background: #f0f9ff; color: #0369a1; }
+        .btn-view:hover   { background: #0369a1; color: white; }
+        .btn-edit   { background: #fef3c7; color: #92400e; }
+        .btn-edit:hover   { background: #92400e; color: white; }
+        .btn-delete { background: #fee2e2; color: #dc2626; }
+        .btn-delete:hover { background: #dc2626; color: white; }
+
+        /* ── Modal ── */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 480px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+        .modal-header i { width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 600; color: #1a202c; }
+        .modal-body { margin-bottom: 1.5rem; color: #4a5568; line-height: 1.6; font-size: 0.92rem; }
+        .organization-highlight { background: #f3f4f6; padding: 0.85rem 1rem; border-radius: 8px; margin: 0.85rem 0; border-left: 4px solid #dc2626; font-size: 0.88rem; }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+        .btn-cancel { background: #f3f4f6; color: #4a5568; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
+        .btn-cancel:hover { background: #e5e7eb; }
+        .btn-confirm-delete { background: #dc2626; color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
+        .btn-confirm-delete:hover { background: #b91c1c; }
+
+        /* ── Pagination ── */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 1.5rem; }
+        .pagination a, .pagination span { padding: 7px 11px; border-radius: 8px; text-decoration: none; color: #4a5568; font-weight: 500; font-size: 0.88rem; transition: all 0.3s ease; }
+        .pagination a:hover { background: #f7fafc; color: #0000FF; }
+        .pagination .current { background: #0000FF; color: white; }
+        .pagination .disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Empty State ── */
+        .empty-state { text-align: center; padding: 3.5rem 2rem; color: #718096; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; display: block; }
+        .empty-state h3 { font-size: 1.1rem; margin-bottom: 0.4rem; color: #4a5568; }
+        .empty-state p { font-size: 0.88rem; }
+
+        /* ── Responsive ── */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .page-header { flex-direction: column; align-items: stretch; }
+            .page-actions { flex-direction: column; }
+            .search-box { min-width: auto; }
+            .actions { flex-wrap: wrap; }
+        }
+        @media (max-width: 768px) {
+            .header, .main-content { padding: 0.75rem 1rem; }
+            .schools-table th, .schools-table td { padding: 10px 8px; }
+        }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+  <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-wrapper" id="mainWrapper">
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="breadcrumb">
+                    <a href="<?php echo BASE_URL;?>dashboard.php">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Organizations</span>
+                </div>
+            </div>
+            <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <?php if ($message): ?>
+        <div class="message-container">
+            <div class="message <?php echo htmlspecialchars($messageType); ?>">
+                <i class="fas <?php echo $messageType==='success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <div class="page-header">
+            <div class="page-title">
+                <h1>Organizations</h1>
+                <p>Manage all registered schools in the system</p>
+            </div>
+            <div class="page-actions">
+                <form method="GET" class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="search" class="search-input"
+                        placeholder="Search by name, city, email..."
+                        value="<?php echo htmlspecialchars($search); ?>">
+                    <?php if(isset($_GET['page'])): ?>
+                        <input type="hidden" name="page" value="<?php echo intval($_GET['page']); ?>">
+                    <?php endif; ?>
+                </form>
+                <a href="<?php echo BASE_URL; ?>organization/addOrganization.php" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add Organization
+                </a>
+            </div>
+        </div>
+
+        <div class="schools-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-building"></i> All Organizations</h3>
+               <!-- <span class="schools-count"><?php echo number_format($filteredTotal); ?> schools</span> -->
+            </div>
+
+            <?php if ($schools): ?>
+            <div style="overflow-x:auto;">
+            <table class="schools-table">
+                <thead>
+                    <tr>
+                        <th>Organization</th>
+                        <th>Org ID</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($schools as $sc): ?>
+                <tr>
+                    <td>
+                        <div class="organization-info">
+                            <div class="organization-avatar"><?php echo strtoupper(substr($sc['name'],0,2)); ?></div>
+                            <div class="organization-details">
+                                <h4><?php echo htmlspecialchars($sc['name']); ?></h4>
+                                <p><?php echo !empty($sc['address']) ? htmlspecialchars(substr($sc['address'],0,40)).'…' : 'No address'; ?></p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <?php if (!empty($sc['org_id'])): ?>
+                            <span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;">
+                                <?php echo htmlspecialchars($sc['org_id']); ?>
+                            </span>
+                        <?php else: ?>
+                            <span class="text-muted">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?php echo $sc['phone'] ? htmlspecialchars($sc['phone']) : '<span class="text-muted">—</span>'; ?></td>
+                    <td>
+                        <div class="actions">
+                            <a href="view-organization.php?id=<?php echo (int)$sc['id']; ?>" class="btn-sm btn-view">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <a href="edit_organization.php?id=<?php echo (int)$sc['id']; ?>" class="btn-sm btn-edit">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn-sm btn-delete"
+                                onclick="showDeleteModal(<?php echo (int)$sc['id']; ?>,'<?php echo addslashes(htmlspecialchars($sc['name'])); ?>','<?php echo addslashes(htmlspecialchars(implode(', ', array_filter([$sc['city']??'',$sc['state']??''])))); ?>')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            </div>
+
+            <?php else: ?>
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <h3>No schools found</h3>
+                <?php if ($search): ?>
+                    <p>No schools match "<?php echo htmlspecialchars($search); ?>"</p>
+                    <a href="organization.php" class="btn-primary" style="margin-top:1rem;display:inline-flex">
+                        <i class="fas fa-arrow-left"></i> Show All
+                    </a>
+                <?php else: ?>
+                    <p>No schools registered yet.</p>
+                    <a href="organization/addOrganization.php" class="btn-primary" style="margin-top:1rem;display:inline-flex">
+                        <i class="fas fa-plus"></i> Add First Organization
+                    </a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($totalPages > 1): ?>
+        <div class="pagination">
+            <?php
+            $qs = $search ? '&search='.urlencode($search) : '';
+            echo $page > 1
+                ? "<a href='?page=".($page-1)."$qs'><i class='fas fa-chevron-left'></i></a>"
+                : "<span class='disabled'><i class='fas fa-chevron-left'></i></span>";
+            $s2=max(1,$page-2); $e2=min($totalPages,$page+2);
+            if($s2>1){ echo "<a href='?page=1$qs'>1</a>"; if($s2>2) echo "<span>…</span>"; }
+            for($i=$s2;$i<=$e2;$i++)
+                echo $i==$page ? "<span class='current'>$i</span>" : "<a href='?page=$i$qs'>$i</a>";
+            if($e2<$totalPages){ if($e2<$totalPages-1) echo "<span>…</span>"; echo "<a href='?page=$totalPages$qs'>$totalPages</a>"; }
+            echo $page < $totalPages
+                ? "<a href='?page=".($page+1)."$qs'><i class='fas fa-chevron-right'></i></a>"
+                : "<span class='disabled'><i class='fas fa-chevron-right'></i></span>";
+            ?>
+        </div>
+        <?php endif; ?>
+
+    </main>
+</div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Delete Organization</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this organization? This action cannot be undone.</p>
+            <div class="organization-highlight">
+                <strong>Organization:</strong> <span id="deleteSchoolName"></span><br>
+                <strong>Location:</strong> <span id="deleteSchoolCity"></span>
+            </div>
+            <p><strong>Warning:</strong> All associated data will be permanently deleted.</p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="hideDeleteModal()">Cancel</button>
+            <form method="POST" style="display:inline">
+                <input type="hidden" name="school_id" id="deleteSchoolId">
+                <button type="submit" name="delete_school" class="btn-confirm-delete">Delete Organization</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const menuToggle     = document.getElementById('menuToggle');
+    const sidebar        = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); });
+    sidebarOverlay.addEventListener('click', () => { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); });
+    window.addEventListener('resize', () => { if(window.innerWidth>1024){ sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); }});
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => { if(window.innerWidth<=1024){ sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); }});
+    });
+    let searchTimeout;
+    document.querySelector('.search-input').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => this.form.submit(), 500);
+    });
+    function showDeleteModal(id, name, city) {
+        document.getElementById('deleteSchoolId').value = id;
+        document.getElementById('deleteSchoolName').textContent = name;
+        document.getElementById('deleteSchoolCity').textContent = city || '—';
+        document.getElementById('deleteModal').classList.add('active');
+    }
+    function hideDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+    document.getElementById('deleteModal').addEventListener('click', e => { if(e.target===document.getElementById('deleteModal')) hideDeleteModal(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') hideDeleteModal(); });
+    const msgContainer = document.querySelector('.message-container');
+    if (msgContainer) {
+        setTimeout(() => {
+            msgContainer.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => msgContainer.remove(), 300);
+        }, 5000);
+    }
+</script>
+</body>
+</html>

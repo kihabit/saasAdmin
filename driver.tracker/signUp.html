@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Driver Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --blue: #0000FF;
+            --blue-mid: #4169E1;
+            --blue-light: rgba(0,0,255,0.08);
+            --green: #10b981;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-400: #94a3b8;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --shadow-xl: 0 24px 64px rgba(0,0,255,0.14);
+        }
+
+        body { font-family: 'DM Sans', sans-serif; background: #f0f4ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; position: relative; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 800px 600px at 20% 10%, rgba(0,0,255,0.07) 0%, transparent 60%), radial-gradient(ellipse 600px 500px at 80% 90%, rgba(65,105,225,0.06) 0%, transparent 60%); pointer-events: none; }
+        .dots-bg { position: fixed; inset: 0; background-image: radial-gradient(rgba(0,0,255,0.08) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; }
+
+        .signup-container { background: white; border-radius: 28px; padding: 52px 44px; width: 100%; max-width: 680px; position: relative; box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0,0,255,0.07); z-index: 1; }
+        .signup-container::before { content: ''; position: absolute; top: 0; left: 40px; right: 40px; height: 3px; background: linear-gradient(90deg, transparent, var(--blue), var(--blue-mid), transparent); border-radius: 0 0 4px 4px; }
+
+        .signup-header { text-align: center; margin-bottom: 44px; }
+        .logo-wrap { width: 72px; height: 72px; margin: 0 auto 20px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,255,0.18); border: 2px solid var(--gray-100); }
+        .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .signup-title { font-family: 'Sora', sans-serif; font-size: 2.1rem; font-weight: 700; color: var(--gray-800); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .signup-subtitle { color: var(--gray-400); font-size: 0.95rem; font-weight: 400; }
+
+        /* Location Banner */
+        .location-banner { display: none; align-items: center; gap: 12px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 14px; padding: 14px 18px; margin-bottom: 24px; font-size: 0.88rem; color: #1d4ed8; font-weight: 500; animation: slideDown 0.4s ease; }
+        .location-banner.show { display: flex; }
+        .location-banner.success { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #bbf7d0; color: #15803d; }
+        .location-banner.error { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fed7aa; color: #c2410c; }
+        .location-banner .spin { width: 18px; height: 18px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+        .location-banner .icon { font-size: 18px; flex-shrink: 0; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-label { display: block; color: var(--gray-600); font-weight: 600; margin-bottom: 7px; font-size: 0.83rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 14px; color: var(--gray-400); font-size: 15px; pointer-events: none; z-index: 1; transition: color 0.3s; }
+        .form-input, .form-select { width: 100%; padding: 12px 14px 12px 42px; border: 1.5px solid var(--gray-200); border-radius: 12px; font-size: 0.93rem; background: var(--gray-50); transition: all 0.25s ease; outline: none; font-weight: 500; color: var(--gray-800); font-family: 'DM Sans', sans-serif; }
+        .form-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+        .form-input:focus, .form-select:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3.5px rgba(0,0,255,0.1); }
+        .form-input.invalid, .form-select.invalid { border-color: var(--red); background: #fff5f5; }
+        .form-input.valid, .form-select.valid { border-color: var(--green); }
+        .form-input::placeholder { color: var(--gray-400); font-weight: 400; }
+        .field-error { margin-top: 5px; font-size: 0.78rem; color: var(--red); display: none; font-weight: 500; }
+
+        /* ── Organization Search ── */
+        .organization-search-wrapper { position: relative; }
+        .organization-dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1.5px solid var(--blue); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,255,0.12); z-index: 500; max-height: 260px; overflow-y: auto; animation: slideDown 0.2s ease; }
+        .organization-dropdown.open { display: block; }
+        .organization-dropdown-header { padding: 7px 14px; font-size: 0.7rem; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--gray-100); background: var(--gray-50); border-radius: 12px 12px 0 0; }
+        .organization-option { padding: 10px 14px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--gray-100); display: flex; flex-direction: column; gap: 2px; }
+        .organization-option:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
+        .organization-option:hover, .organization-option.highlighted { background: #eff6ff; }
+        .organization-option-name { font-size: 0.87rem; font-weight: 600; color: var(--gray-800); }
+        .organization-option-meta { font-size: 0.74rem; color: var(--gray-400); display: flex; gap: 8px; align-items: center; }
+        .organization-option-id { background: #dbeafe; color: #1d4ed8; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; }
+        .organization-no-result { padding: 16px 14px; text-align: center; color: var(--gray-400); font-size: 0.84rem; }
+        .organization-selected-badge { display: none; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 10px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 0.76rem; color: #15803d; font-weight: 500; }
+        .organization-selected-badge.show { display: flex; }
+        .badge-clear { margin-left: auto; cursor: pointer; color: #15803d; font-size: 12px; opacity: 0.7; transition: opacity 0.2s; background: none; border: none; }
+        .badge-clear:hover { opacity: 1; }
+        .match-highlight { color: var(--blue); font-weight: 700; }
+
+        /* Password */
+        .password-toggle { position: absolute; right: 13px; background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 15px; transition: color 0.2s; padding: 4px; z-index: 1; }
+        .password-toggle:hover { color: var(--blue); }
+        .password-strength { margin-top: 7px; display: flex; gap: 4px; }
+        .strength-bar { height: 3px; flex: 1; background: var(--gray-200); border-radius: 2px; transition: background 0.3s; }
+        .strength-bar.weak { background: var(--red); }
+        .strength-bar.medium { background: var(--amber); }
+        .strength-bar.strong { background: var(--green); }
+        .password-requirements { margin-top: 10px; font-size: 0.78rem; color: var(--gray-400); }
+        .requirement { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; transition: color 0.25s; }
+        .requirement.met { color: var(--green); }
+        .req-icon { width: 14px; text-align: center; font-size: 12px; }
+        .password-match { margin-top: 7px; font-size: 0.8rem; font-weight: 500; }
+
+        .section-label { font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-400); margin: 8px 0 20px; display: flex; align-items: center; gap: 10px; }
+        .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+
+        .checkbox-group { display: flex; align-items: flex-start; margin: 8px 0 28px; gap: 12px; }
+        .custom-checkbox { width: 20px; height: 20px; border: 1.5px solid var(--gray-200); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; background: white; transition: all 0.25s; }
+        .custom-checkbox.checked { background: var(--blue); border-color: var(--blue); }
+        .custom-checkbox.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+        .checkbox-label { color: var(--gray-600); font-size: 0.86rem; cursor: pointer; user-select: none; font-weight: 500; line-height: 1.5; }
+        .checkbox-label a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+        .signup-button { width: 100%; padding: 15px; background: var(--blue); color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; font-family: 'Sora', sans-serif; cursor: pointer; transition: all 0.25s ease; position: relative; letter-spacing: 0.01em; margin-bottom: 28px; }
+        .signup-button:hover:not(:disabled) { background: #0000cc; transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,255,0.35); }
+        .signup-button:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; box-shadow: none; }
+        .signup-button.loading::after { content: ''; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .signin-link { text-align: center; color: var(--gray-400); font-size: 0.88rem; }
+        .signin-link a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+        @media (max-width: 580px) { .signup-container { padding: 36px 22px; border-radius: 20px; } .signup-title { font-size: 1.7rem; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="dots-bg"></div>
+
+<div class="signup-container">
+    <div class="signup-header">
+        <div class="logo-wrap">
+            <img src="https://erphub.ai/driver.tracker/icon/ic_logo.png" alt="Logo">
+        </div>
+        <h1 class="signup-title">Create Account</h1>
+        <p class="signup-subtitle">Join us today and get started</p>
+    </div>
+
+    <!-- Location Banner -->
+    <div class="location-banner" id="locationBanner">
+        <div class="spin" id="locationSpinner"></div>
+        <span class="icon" id="locationIcon" style="display:none">📍</span>
+        <span id="locationText">Fetching your location...</span>
+    </div>
+
+    <form id="signupForm">
+
+        <!-- Personal Info -->
+        <div class="section-label">Personal Info</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">First Name</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">👤</i>
+                    <input type="text" id="firstName" class="form-input" placeholder="First name" required>
+                </div>
+                <div class="field-error" id="firstNameError">Min 2 characters, letters only</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">👤</i>
+                    <input type="text" id="lastName" class="form-input" placeholder="Last name" required>
+                </div>
+                <div class="field-error" id="lastNameError">Min 2 characters, letters only</div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">User Type</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">👥</i>
+                    <select id="role" class="form-select" required>
+                        <option value="">-- Choose Type --</option>
+                        <option value="school_admin">Organization Admin</option>
+                        <option value="school_staff">Organization Staff</option>
+                        <option value="driver">Driver</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="parent">Parent</option>
+                    </select>
+                </div>
+                <div class="field-error" id="roleError">Please select a user type</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">📱</i>
+                    <input type="text" id="phoneNumber" class="form-input" placeholder="Phone number" required>
+                </div>
+                <div class="field-error" id="phoneNumberError">Enter your phone number</div>
+            </div>
+        </div>
+
+        <!-- ══ SCHOOL SEARCH ══ -->
+        <div class="section-label">Organization Info</div>
+
+        <div class="form-group full">
+            <label class="form-label">Search Organization <span style="color:var(--red)">*</span></label>
+            <div class="input-wrapper organization-search-wrapper">
+                <i class="input-icon">🏫</i>
+                <input type="text" id="schoolSearch" class="form-input"
+                    placeholder="Type organization name to search..."
+                    autocomplete="off" required>
+                <span id="schoolSpinner" style="display:none;position:absolute;right:14px;">
+                    <span style="display:inline-block;width:14px;height:14px;border:2px solid #94a3b8;border-top-color:var(--blue);border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                </span>
+                <div class="organization-dropdown" id="schoolDropdown">
+                    <div class="organization-dropdown-header">🏫 Organizations in database</div>
+                    <div id="schoolDropdownBody"></div>
+                </div>
+            </div>
+            <div class="organization-selected-badge" id="schoolSelectedBadge">
+                <span>✅</span>
+                <span id="schoolSelectedText"></span>
+                <button type="button" class="badge-clear" id="clearSchool">✕ Clear</button>
+            </div>
+            <div class="field-error" id="schoolSearchError">Please select a organization from the list</div>
+        </div>
+
+        <!-- Auto-fill display -->
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Organization ID</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🪪</i>
+                    <input type="text" id="schoolIdDisplay" class="form-input" placeholder="Auto-filled" readonly
+                        style="background:#f0fdf4;cursor:not-allowed;color:#15803d;font-weight:700;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Organization Name</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🏫</i>
+                    <input type="text" id="schoolNameDisplay" class="form-input" placeholder="Auto-filled" readonly
+                        style="background:#f0fdf4;cursor:not-allowed;color:#15803d;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden fields -->
+        <input type="hidden" id="school_id" name="school_id" value="">
+        <input type="hidden" id="school_name" name="school_name" value="">
+        <!-- ══════════════════ -->
+
+        <!-- Account Info -->
+        <div class="section-label">Account Info</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">📧</i>
+                    <input type="email" id="email" class="form-input" placeholder="Email address" required>
+                </div>
+                <div class="field-error" id="emailError">Enter a valid email</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🔖</i>
+                    <input type="text" id="username" class="form-input" placeholder="Username" required>
+                </div>
+                <div class="field-error" id="usernameError">Min 3 chars, alphanumeric only</div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="section-label">Address</div>
+        <div class="form-group full">
+            <label class="form-label">Street</label>
+            <div class="input-wrapper">
+                <i class="input-icon">🏠</i>
+                <input type="text" id="street" class="form-input" placeholder="Street address" required>
+            </div>
+            <div class="field-error" id="streetError">Enter your street</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">City</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🏙️</i>
+                    <input type="text" id="city" class="form-input" placeholder="City" required>
+                </div>
+                <div class="field-error" id="cityError">Enter your city</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">State</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🗺️</i>
+                    <input type="text" id="state" class="form-input" placeholder="State" required>
+                </div>
+                <div class="field-error" id="stateError">Enter your state</div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Country</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🌍</i>
+                    <input type="text" id="country" class="form-input" placeholder="Country" required>
+                </div>
+                <div class="field-error" id="countryError">Enter your country</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Zip Code</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">📮</i>
+                    <input type="text" id="zipCode" class="form-input" placeholder="Zip code" required>
+                </div>
+                <div class="field-error" id="zipCodeError">Enter your zip code</div>
+            </div>
+        </div>
+
+        <input type="hidden" id="latitude" name="latitude" value="">
+        <input type="hidden" id="longitude" name="longitude" value="">
+
+        <!-- Security -->
+        <div class="section-label">Security</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🔒</i>
+                    <input type="password" id="password" class="form-input" placeholder="Create password" required>
+                    <button type="button" class="password-toggle" id="passwordToggle">👁️</button>
+                </div>
+                <div class="password-strength">
+                    <div class="strength-bar"></div>
+                    <div class="strength-bar"></div>
+                    <div class="strength-bar"></div>
+                    <div class="strength-bar"></div>
+                </div>
+                <div class="password-requirements">
+                    <div class="requirement" id="lengthReq"><span class="req-icon">○</span> 8+ characters</div>
+                    <div class="requirement" id="uppercaseReq"><span class="req-icon">○</span> Uppercase letter</div>
+                    <div class="requirement" id="numberReq"><span class="req-icon">○</span> Number</div>
+                    <div class="requirement" id="specialReq"><span class="req-icon">○</span> Special character</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-wrapper">
+                    <i class="input-icon">🔐</i>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm password" required>
+                    <button type="button" class="password-toggle" id="confirmPasswordToggle">👁️</button>
+                </div>
+                <div id="passwordMatch" class="password-match"></div>
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <div class="custom-checkbox" id="agreeTerms"></div>
+            <label class="checkbox-label" id="checkboxLabel">
+                I agree to the <a href="#" id="termsLink">Terms of Service</a> and <a href="#" id="privacyLink">Privacy Policy</a>
+            </label>
+        </div>
+
+        <button type="submit" class="signup-button" id="signupBtn">Create Account</button>
+    </form>
+
+    <div class="signin-link">Already have an account? <a href="index.html">Sign in</a></div>
+</div>
+
+<script>
+// ── Elements ──────────────────────────────────────────────────────────────
+const signupForm           = document.getElementById('signupForm');
+const firstNameInput       = document.getElementById('firstName');
+const lastNameInput        = document.getElementById('lastName');
+const roleInput            = document.getElementById('role');
+const emailInput           = document.getElementById('email');
+const usernameInput        = document.getElementById('username');
+const phoneNumberInput     = document.getElementById('phoneNumber');
+const streetInput          = document.getElementById('street');
+const cityInput            = document.getElementById('city');
+const stateInput           = document.getElementById('state');
+const countryInput         = document.getElementById('country');
+const zipCodeInput         = document.getElementById('zipCode');
+const passwordInput        = document.getElementById('password');
+const confirmPasswordInput = document.getElementById('confirmPassword');
+const agreeTermsCheckbox   = document.getElementById('agreeTerms');
+const signupBtn            = document.getElementById('signupBtn');
+const strengthBars         = document.querySelectorAll('.strength-bar');
+const lengthReq            = document.getElementById('lengthReq');
+const uppercaseReq         = document.getElementById('uppercaseReq');
+const numberReq            = document.getElementById('numberReq');
+const specialReq           = document.getElementById('specialReq');
+const passwordMatch        = document.getElementById('passwordMatch');
+const locationBanner       = document.getElementById('locationBanner');
+const locationSpinner      = document.getElementById('locationSpinner');
+const locationIcon         = document.getElementById('locationIcon');
+const locationText         = document.getElementById('locationText');
+
+// ══ SCHOOL SEARCH ═════════════════════════════════════════════════════════
+const schoolSearchInput   = document.getElementById('schoolSearch');
+const schoolDropdown      = document.getElementById('schoolDropdown');
+const schoolDropdownBody  = document.getElementById('schoolDropdownBody');
+const schoolSpinner       = document.getElementById('schoolSpinner');
+const schoolSelectedBadge = document.getElementById('schoolSelectedBadge');
+const schoolSelectedText  = document.getElementById('schoolSelectedText');
+const clearSchoolBtn      = document.getElementById('clearSchool');
+const schoolIdDisplay     = document.getElementById('schoolIdDisplay');
+const schoolNameDisplay   = document.getElementById('schoolNameDisplay');
+const schoolIdHidden      = document.getElementById('school_id');
+const schoolNameHidden    = document.getElementById('school_name');
+
+let schoolSearchTimer = null;
+let selectedSchool    = null;
+let highlightedIndex  = -1;
+let currentResults    = [];
+
+async function searchSchools(query) {
+    try {
+        const res  = await fetch(`search_school.php?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        return data.schools || [];
+    } catch(e) {
+        console.error('Organization search failed:', e);
+        return [];
+    }
+}
+
+function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<span class="match-highlight">$1</span>');
+}
+
+function renderDropdown(results, query) {
+    currentResults   = results;
+    highlightedIndex = -1;
+    schoolDropdownBody.innerHTML = '';
+    if (results.length === 0) {
+        schoolDropdownBody.innerHTML = `<div class="organization-no-result">😕 No organization found for "<strong>${query}</strong>"<br><small>Try different name or city</small></div>`;
+    } else {
+        results.forEach((organization, i) => {
+            const div = document.createElement('div');
+            div.className = 'organization-option';
+            div.innerHTML = `
+                <div class="organization-option-name">${highlightText(organization.name, query)}</div>
+                <div class="organization-option-meta">
+                    <span class="organization-option-id">ID: ${organization.id}</span>
+                    <span>📍 ${organization.city || ''} ${organization.state ? ', ' + organization.state : ''}</span>
+                </div>`;
+            div.addEventListener('mousedown', e => { e.preventDefault(); selectSchool(organization); });
+            schoolDropdownBody.appendChild(div);
+        });
+    }
+    schoolDropdown.classList.add('open');
+}
+
+function selectSchool(organization) {
+    selectedSchool          = organization;
+    schoolIdHidden.value    = organization.id;
+    schoolNameHidden.value  = organization.name;
+    schoolIdDisplay.value   = organization.id;
+    schoolNameDisplay.value = organization.name;
+    schoolSearchInput.value = organization.name;
+    schoolSearchInput.classList.add('valid');
+    schoolSearchInput.classList.remove('invalid');
+    schoolSelectedText.textContent = `${organization.name} | ID: ${organization.id}${organization.city ? ' | ' + organization.city : ''}`;
+    schoolSelectedBadge.classList.add('show');
+    document.getElementById('schoolSearchError').style.display = 'none';
+    schoolDropdown.classList.remove('open');
+    updateSubmitButton();
+}
+
+function clearSchool() {
+    selectedSchool = null;
+    schoolIdHidden.value = schoolNameHidden.value = '';
+    schoolIdDisplay.value = schoolNameDisplay.value = '';
+    schoolSearchInput.value = '';
+    schoolSearchInput.classList.remove('valid', 'invalid');
+    schoolSelectedBadge.classList.remove('show');
+    schoolDropdown.classList.remove('open');
+    updateSubmitButton();
+}
+
+clearSchoolBtn.addEventListener('click', clearSchool);
+
+schoolSearchInput.addEventListener('input', function() {
+    const q = this.value.trim();
+    clearTimeout(schoolSearchTimer);
+    if (selectedSchool && q !== selectedSchool.name) {
+        selectedSchool = null;
+        schoolIdHidden.value = schoolNameHidden.value = '';
+        schoolIdDisplay.value = schoolNameDisplay.value = '';
+        schoolSelectedBadge.classList.remove('show');
+    }
+    if (q.length < 2) { schoolDropdown.classList.remove('open'); schoolSpinner.style.display = 'none'; return; }
+    schoolSpinner.style.display = 'block';
+    schoolSearchTimer = setTimeout(async () => {
+        const results = await searchSchools(q);
+        schoolSpinner.style.display = 'none';
+        renderDropdown(results, q);
+    }, 300);
+});
+
+schoolSearchInput.addEventListener('keydown', function(e) {
+    const options = schoolDropdownBody.querySelectorAll('.organization-option');
+    if (!options.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); highlightedIndex = Math.min(highlightedIndex + 1, options.length - 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); highlightedIndex = Math.max(highlightedIndex - 1, 0); }
+    else if (e.key === 'Enter' && highlightedIndex >= 0) { e.preventDefault(); selectSchool(currentResults[highlightedIndex]); return; }
+    else if (e.key === 'Escape') { schoolDropdown.classList.remove('open'); return; }
+    options.forEach((o, i) => o.classList.toggle('highlighted', i === highlightedIndex));
+    if (highlightedIndex >= 0) options[highlightedIndex].scrollIntoView({ block: 'nearest' });
+});
+
+document.addEventListener('click', e => { if (!e.target.closest('.organization-search-wrapper')) schoolDropdown.classList.remove('open'); });
+// ══ END SCHOOL SEARCH ═════════════════════════════════════════════════════
+
+// ── GPS Location ──────────────────────────────────────────────────────────
+function showLocationBanner(state, msg) {
+    locationBanner.className = 'location-banner show ' + (state || '');
+    locationSpinner.style.display = state === 'loading' ? 'block' : 'none';
+    locationIcon.style.display    = state !== 'loading' ? 'block' : 'none';
+    locationIcon.textContent = state === 'success' ? '✅' : state === 'error' ? '⚠️' : '📍';
+    locationText.textContent = msg;
+    if (state === 'success') setTimeout(() => locationBanner.classList.remove('show'), 4000);
+}
+
+function fetchParentLocation() {
+    if (!navigator.geolocation) { showLocationBanner('error', 'Geolocation not supported.'); return; }
+    showLocationBanner('loading', 'Fetching your location...');
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            document.getElementById('latitude').value  = pos.coords.latitude;
+            document.getElementById('longitude').value = pos.coords.longitude;
+            showLocationBanner('success', 'Location saved: ' + pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5));
+        },
+        err => {
+            let msg = 'Location access denied. ';
+            if (err.code === 1) msg += 'Please allow location in browser settings.';
+            else if (err.code === 2) msg += 'Position unavailable.';
+            else if (err.code === 3) msg += 'Location request timed out.';
+            document.getElementById('latitude').value  = '';
+            document.getElementById('longitude').value = '';
+            showLocationBanner('error', msg);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
+
+roleInput.addEventListener('change', function() {
+    const isValid = this.value !== '';
+    this.classList.toggle('valid', isValid);
+    this.classList.toggle('invalid', !isValid);
+    document.getElementById('roleError').style.display = isValid ? 'none' : 'block';
+    if (this.value === 'parent') fetchParentLocation();
+    else { document.getElementById('latitude').value = ''; document.getElementById('longitude').value = ''; locationBanner.classList.remove('show'); }
+    updateSubmitButton();
+});
+
+// ── Password Toggles ──────────────────────────────────────────────────────
+document.getElementById('passwordToggle').addEventListener('click', function() {
+    const t = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = t; this.textContent = t === 'password' ? '👁️' : '🙈';
+});
+document.getElementById('confirmPasswordToggle').addEventListener('click', function() {
+    const t = confirmPasswordInput.type === 'password' ? 'text' : 'password';
+    confirmPasswordInput.type = t; this.textContent = t === 'password' ? '👁️' : '🙈';
+});
+
+// ── Checkbox ──────────────────────────────────────────────────────────────
+agreeTermsCheckbox.addEventListener('click', function(e) { e.stopPropagation(); this.classList.toggle('checked'); updateSubmitButton(); });
+document.getElementById('checkboxLabel').addEventListener('click', function(e) { if (e.target.tagName !== 'A') { e.preventDefault(); e.stopPropagation(); agreeTermsCheckbox.click(); } });
+
+// ── Validators ────────────────────────────────────────────────────────────
+function validateName(v)     { const t = v.trim(); return t.length >= 2 && /^[a-zA-Z\s]+$/.test(t); }
+function validateEmail(v)    { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+function validateUsername(v) { const t = v.trim(); return t.length >= 3 && /^[a-zA-Z0-9_]+$/.test(t); }
+function validateNotEmpty(v) { return v && v.trim().length > 0; }
+function validateRole(v)     { return v !== ''; }
+function validateSchool()    { return selectedSchool !== null; }
+
+function showFieldValidation(fieldId, isValid) {
+    const field = document.getElementById(fieldId);
+    const errEl = document.getElementById(fieldId + 'Error');
+    if (!field.value || field.value.trim() === '') { field.classList.remove('valid', 'invalid'); if (errEl) errEl.style.display = 'none'; return false; }
+    field.classList.toggle('valid', isValid);
+    field.classList.toggle('invalid', !isValid);
+    if (errEl) errEl.style.display = isValid ? 'none' : 'block';
+    return isValid;
+}
+
+const fieldValidations = [
+    ['firstName',   () => validateName(firstNameInput.value)],
+    ['lastName',    () => validateName(lastNameInput.value)],
+    ['email',       () => validateEmail(emailInput.value)],
+    ['username',    () => validateUsername(usernameInput.value)],
+    ['phoneNumber', () => validateNotEmpty(phoneNumberInput.value)],
+    ['street',      () => validateNotEmpty(streetInput.value)],
+    ['city',        () => validateNotEmpty(cityInput.value)],
+    ['state',       () => validateNotEmpty(stateInput.value)],
+    ['country',     () => validateNotEmpty(countryInput.value)],
+    ['zipCode',     () => validateNotEmpty(zipCodeInput.value)],
+];
+
+fieldValidations.forEach(([id, fn]) => {
+    document.getElementById(id).addEventListener('input', function() { showFieldValidation(id, fn()); updateSubmitButton(); });
+});
+
+passwordInput.addEventListener('input', function() { checkPasswordStrength(this.value); checkPasswordMatch(); updateSubmitButton(); });
+confirmPasswordInput.addEventListener('input', function() { checkPasswordMatch(); updateSubmitButton(); });
+
+// ── Password Strength ─────────────────────────────────────────────────────
+function checkPasswordStrength(pw) {
+    const req = { length: pw.length >= 8, uppercase: /[A-Z]/.test(pw), number: /\d/.test(pw), special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) };
+    const upd = (el, met) => { el.classList.toggle('met', met); el.querySelector('.req-icon').textContent = met ? '✓' : '○'; };
+    upd(lengthReq, req.length); upd(uppercaseReq, req.uppercase); upd(numberReq, req.number); upd(specialReq, req.special);
+    const str = Object.values(req).filter(Boolean).length;
+    strengthBars.forEach((b, i) => { b.className = 'strength-bar'; if (i < str) b.classList.add(str <= 1 ? 'weak' : str <= 3 ? 'medium' : 'strong'); });
+    return Object.values(req).every(Boolean);
+}
+
+function checkPasswordMatch() {
+    const p = passwordInput.value, c = confirmPasswordInput.value;
+    if (!c) { passwordMatch.textContent = ''; return false; }
+    const ok = p === c;
+    passwordMatch.textContent = ok ? '✓ Passwords match' : '✗ Passwords do not match';
+    passwordMatch.style.color = ok ? '#10b981' : '#ef4444';
+    return ok;
+}
+
+// ── Submit Button ─────────────────────────────────────────────────────────
+const checkLabels = [
+    'Enter Valid First Name', 'Enter Valid Last Name', 'Select a User Type',
+    'Select a Organization',        'Enter Valid Email',     'Enter Valid Username',
+    'Enter Phone Number',     'Enter Street',          'Enter City',
+    'Enter State',            'Enter Country',         'Enter Zip Code',
+    'Complete Password Requirements', 'Passwords Must Match', 'Accept Terms & Conditions'
+];
+
+function updateSubmitButton() {
+    const checks = [
+        validateName(firstNameInput.value),
+        validateName(lastNameInput.value),
+        validateRole(roleInput.value),
+        validateSchool(),
+        validateEmail(emailInput.value),
+        validateUsername(usernameInput.value),
+        validateNotEmpty(phoneNumberInput.value),
+        validateNotEmpty(streetInput.value),
+        validateNotEmpty(cityInput.value),
+        validateNotEmpty(stateInput.value),
+        validateNotEmpty(countryInput.value),
+        validateNotEmpty(zipCodeInput.value),
+        checkPasswordStrength(passwordInput.value),
+        checkPasswordMatch(),
+        agreeTermsCheckbox.classList.contains('checked')
+    ];
+    const valid = checks.every(Boolean);
+    signupBtn.disabled = !valid;
+    const idx = checks.findIndex(c => !c);
+    signupBtn.textContent = (!valid && idx >= 0) ? checkLabels[idx] : 'Create Account';
+}
+
+// ── Form Submit ───────────────────────────────────────────────────────────
+signupForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateSubmitButton();
+    if (signupBtn.disabled) { alert('Please fix all errors before submitting.'); return; }
+
+    signupBtn.classList.add('loading');
+    signupBtn.textContent = 'Creating Account...';
+    signupBtn.disabled = true;
+
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+    const fullAddress = [streetInput.value.trim(), cityInput.value.trim(), stateInput.value.trim(), countryInput.value.trim()].join(', ') + ' - ' + zipCodeInput.value.trim();
+
+    const formData = {
+        firstName:    firstNameInput.value.trim(),
+        lastName:     lastNameInput.value.trim(),
+        name:         firstNameInput.value.trim() + ' ' + lastNameInput.value.trim(),
+        role:         roleInput.value,
+        school_id:    selectedSchool ? selectedSchool.id   : null,
+        school_name:  selectedSchool ? selectedSchool.name : null,
+        email:        emailInput.value.trim(),
+        username:     usernameInput.value.trim(),
+        phone_number: phoneNumberInput.value.trim(),
+        address:      fullAddress,
+        street:       streetInput.value.trim(),
+        city:         cityInput.value.trim(),
+        state:        stateInput.value.trim(),
+        country:      countryInput.value.trim(),
+        zipcode:      zipCodeInput.value.trim(),
+        password:     passwordInput.value,
+        latitude:     lat || null,
+        longitude:    lng || null
+    };
+
+    fetch('signup.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(r => r.json())
+    .then(data => {
+        signupBtn.classList.remove('loading');
+        signupBtn.textContent = 'Create Account';
+        if (data.success) {
+            alert('🎉 ' + data.message + '\n\nWelcome ' + formData.name + '!\nUsername: ' + formData.username + '\nSchool: ' + formData.school_name + '\n\nPlease wait, admin will verify your account!');
+            signupForm.reset();
+            clearSchool();
+            agreeTermsCheckbox.classList.remove('checked');
+            passwordMatch.textContent = '';
+            strengthBars.forEach(b => b.className = 'strength-bar');
+            [lengthReq, uppercaseReq, numberReq, specialReq].forEach(r => { r.classList.remove('met'); r.querySelector('.req-icon').textContent = '○'; });
+            document.getElementById('latitude').value  = '';
+            document.getElementById('longitude').value = '';
+            locationBanner.classList.remove('show');
+            updateSubmitButton();
+            setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        } else {
+            alert('❌ Error: ' + data.message);
+            signupBtn.disabled = false;
+        }
+    })
+    .catch(err => {
+        signupBtn.classList.remove('loading');
+        signupBtn.textContent = 'Create Account';
+        signupBtn.disabled = false;
+        alert('❌ Error: ' + err.message);
+    });
+});
+
+document.getElementById('termsLink').addEventListener('click', e => { e.preventDefault(); alert('Terms of Service'); });
+document.getElementById('privacyLink').addEventListener('click', e => { e.preventDefault(); alert('Privacy Policy'); });
+
+updateSubmitButton();
+</script>
+</body>
+</html>
