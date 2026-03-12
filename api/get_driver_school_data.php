@@ -28,16 +28,33 @@ try {
     $json = file_get_contents("php://input");
     $data = json_decode($json, true);
 
-    if (empty($data['driverId']) || empty($data['organization_id'])) {
-        throw new Exception("driverId and organization_id are required");
+    if (empty($data['organization_id'])) {
+        throw new Exception("organization_id is required");
     }
 
-    $driverId = $data['driverId'];
     $organizationId = $data['organization_id'];
+
+    if (!empty($data['edu_user_id'])) {
+
+        $userId = $data['edu_user_id'];
+        $userTable = 'edu_user';
+        $userIdColumn = 'edu_user_id';
+        $locationsTable = 'edu_locations';
+
+    } elseif (!empty($data['fnc_user_id'])) {
+
+        $userId = $data['fnc_user_id'];
+        $userTable = 'fin_user';
+        $userIdColumn = 'fnc_user_id';
+        $locationsTable = 'fin_locations';
+
+    } else {
+        throw new Exception("edu_user_id or fnc_user_id is required");
+    }
 
     $stmt = $pdo->prepare("
     SELECT 
-        u.edu_user_id,
+        u.$userIdColumn AS user_id,
         u.driverId,
         u.firstName,
         u.lastName,
@@ -63,23 +80,23 @@ try {
         l.is_active, 
         l.updated_at
 
-    FROM edu_user u
+    FROM $userTable u
 
-    LEFT JOIN edu_locations l 
+    LEFT JOIN $locationsTable l 
         ON l.driverId = u.driverId
         AND l.organization_id = :organization_id
 
-    LEFT JOIN organization s
+    INNER JOIN organization s
         ON s.id = :organization_id
 
-    WHERE u.edu_user_id = :driverId
+    WHERE u.$userIdColumn = :userId
     AND u.userType = 4
+    AND u.organization_id = :organization_id
     LIMIT 1
 ");
 
-
     $stmt->execute([
-        ':driverId' => $driverId,
+        ':userId' => $userId,
         ':organization_id' => $organizationId
     ]);
 
@@ -93,10 +110,10 @@ try {
         exit;
     }
 
-    echo json_encode([
-        "status" => "success",
-        "data" => $result
-    ]);
+  echo json_encode([
+    "status" => "success",
+    "data" => $result
+], JSON_PRETTY_PRINT);
 
 } catch (Exception $e) {
 

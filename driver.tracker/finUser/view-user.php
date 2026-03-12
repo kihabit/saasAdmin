@@ -9,7 +9,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
 $_SESSION['last_activity'] = time();
 $db = Database::getInstance();
 $conn = $db->getConnection();
-$logged_user_id = $_SESSION['user_id'] ?? 0;
+$logged_user_id = $_SESSION['user_id'];
 
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     setFlashMessage('error', 'User ID not provided.'); redirect('users.php');
