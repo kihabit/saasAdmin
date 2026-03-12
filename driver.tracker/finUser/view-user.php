@@ -18,13 +18,13 @@ $view_user_id = intval($_GET['id']);
 
 $user = null;
 try {
-    $stmt = $conn->prepare("SELECT u.fnc_user_id as fnc_user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
+    $stmt = $conn->prepare("SELECT u.user_id as user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
                              u.phone_number, u.address, u.city, u.state, u.country, u.zipcode,
                              u.organization_id, u.organization_name, u.userType, u.status, u.created_at, u.last_login, u.latitude, u.longitude,
                              o.org_id as org_custom_id
                              FROM fin_user u
                              LEFT JOIN organization o ON o.id = u.organization_id
-                             WHERE u.fnc_user_id = ?");
+                             WHERE u.user_id = ?");
     $stmt->bind_param("i", $view_user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -40,7 +40,7 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
+            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE user_id = ?");
             $stmt->bind_param("i", $logged_user_id); $stmt->execute(); $stmt->close();
         } catch (Exception $e) { logAppError("Logout error: " . $e->getMessage()); }
     }
@@ -145,7 +145,7 @@ $roleName = $roleNames[$ut] ?? 'Unknown';
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-id-card"></i> User ID</div>
-                            <div class="info-value">#<?php echo $user['fnc_user_id']; ?></div>
+                            <div class="info-value">#<?php echo $user['user_id']; ?></div>
                         </div>
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-car"></i> Driver ID</div>

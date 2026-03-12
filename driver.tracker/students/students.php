@@ -108,7 +108,7 @@ try {
     while ($row = $result->fetch_assoc()) $students[] = $row;
     $stmt->close();
 
-    $pr          = $conn->query("SELECT COUNT(DISTINCT parent_id) as cnt FROM students");
+    $pr = $conn->query("SELECT COUNT(DISTINCT parent_id) as cnt FROM students");
     $parentCount = $pr ? $pr->fetch_assoc()['cnt'] : 0;
 
 } catch (Exception $e) {

@@ -42,7 +42,7 @@ try {
     $currentDateTime = date('Y-m-d H:i:s');
 
     // ── Duplicate checks — fin_user table ──
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE email = ?");
+    $stmt = $conn->prepare("SELECT user_id FROM fin_user WHERE email = ?");
     $stmt->bind_param("s", $data['email']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();
@@ -51,7 +51,7 @@ try {
     }
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE username = ?");
+    $stmt = $conn->prepare("SELECT user_id FROM fin_user WHERE username = ?");
     $stmt->bind_param("s", $data['username']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();
@@ -60,7 +60,7 @@ try {
     }
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE phone_number = ?");
+    $stmt = $conn->prepare("SELECT user_id FROM fin_user WHERE phone_number = ?");
     $stmt->bind_param("s", $data['phone_number']); $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $stmt->close();

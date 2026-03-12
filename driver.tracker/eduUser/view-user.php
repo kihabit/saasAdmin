@@ -18,13 +18,13 @@ $view_user_id = intval($_GET['id']);
 
 $user = null;
 try {
-    $stmt = $conn->prepare("SELECT u.edu_user_id as user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
+    $stmt = $conn->prepare("SELECT u.user_id as user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
                              u.phone_number, u.address, u.city, u.state, u.country, u.zipcode,
                              u.organization_id, u.organization_name, u.userType, u.status, u.created_at, u.last_login, u.latitude, u.longitude,
                              o.org_id as org_custom_id
                              FROM edu_user u
                              LEFT JOIN organization o ON o.id = u.organization_id
-                             WHERE u.edu_user_id = ?");
+                             WHERE u.user_id = ?");
     $stmt->bind_param("i", $view_user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -40,7 +40,7 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE edu_user_id = ?");
+            $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE user_id = ?");
             $stmt->bind_param("i", $logged_user_id); $stmt->execute(); $stmt->close();
         } catch (Exception $e) { logAppError("Logout error: " . $e->getMessage()); }
     }

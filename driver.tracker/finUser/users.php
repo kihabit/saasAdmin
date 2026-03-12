@@ -19,7 +19,7 @@ $_SESSION['last_activity'] = time();
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-$fnc_user_id = $_SESSION['user_id'] ?? 0;
+$user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'];
 $driver_id = $_SESSION['driver_id'];
 $email = $_SESSION['email'];
@@ -33,7 +33,7 @@ $totalRecentLogins = 0;
 
 // Handle status toggle
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
-    $toggleUserId = intval($_POST['fnc_user_id']);
+    $toggleUserId = intval($_POST['user_id']);
     $newStatusInt = intval($_POST['new_status']);
     error_log("Status Toggle - User ID: $toggleUserId, New Status: $newStatusInt");
     if (!in_array($newStatusInt, [0, 1])) {
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         $_SESSION['messageType'] = 'error';
     } else {
         try {
-            $checkStmt = $conn->prepare("SELECT status FROM fin_user WHERE fnc_user_id = ?");
+            $checkStmt = $conn->prepare("SELECT status FROM fin_user WHERE user_id = ?");
             $checkStmt->bind_param("i", $toggleUserId);
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
                     $_SESSION['messageType'] = 'error';
                 } else {
                     $conn->begin_transaction();
-                    $stmt = $conn->prepare("UPDATE fin_user SET status = ? WHERE fnc_user_id = ?");
+                    $stmt = $conn->prepare("UPDATE fin_user SET status = ? WHERE user_id = ?");
                     if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
                     $stmt->bind_param("ii", $newStatusInt, $toggleUserId);
                     if ($stmt->execute()) {
@@ -97,26 +97,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
 }
 
 // Handle user deletion
-if (isset($_POST['delete_user']) && isset($_POST['fnc_user_id'])) {
-    $deleteUserId = intval($_POST['fnc_user_id']);
-    if ($deleteUserId == $fnc_user_id) {
+if (isset($_POST['delete_user']) && isset($_POST['user_id'])) {
+    $deleteUserId = intval($_POST['user_id']);
+    if ($deleteUserId == $user_id) {
         $_SESSION['message'] = 'You cannot delete your own account.';
         $_SESSION['messageType'] = 'error';
     } else {
         try {
             $conn->begin_transaction();
-            $stmt = $conn->prepare("SELECT username, email, driverId FROM fin_user WHERE fnc_user_id = ?");
+            $stmt = $conn->prepare("SELECT username, email, driverId FROM fin_user WHERE user_id = ?");
             $stmt->bind_param("i", $deleteUserId);
             $stmt->execute();
             $result = $stmt->get_result();
             $deletedUser = $result->fetch_assoc();
             $stmt->close();
             if ($deletedUser) {
-                $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
+                $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
-                $stmt = $conn->prepare("DELETE FROM fin_user WHERE fnc_user_id = ?");
+                $stmt = $conn->prepare("DELETE FROM fin_user WHERE user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
@@ -188,7 +188,7 @@ try {
         $totalActiveDrivers = $statsData['active_drivers'];
         $totalRecentLogins = $statsData['recent_logins'];
     }
-    $sql = "SELECT fnc_user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM fin_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM fin_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
     if ($whereClause) {
         $params[] = $limit; $params[] = $offset; $types .= 'ii';
         $stmt = $conn->prepare($sql);
@@ -212,8 +212,8 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE fnc_user_id = ?");
-            $stmt->bind_param("i", $fnc_user_id);
+            $stmt = $conn->prepare("UPDATE fin_user SET token = NULL WHERE user_id = ?");
+            $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $stmt->close();
         } catch (Exception $e) { logAppError("Logout error: " . $e->getMessage()); }
@@ -513,7 +513,7 @@ $db->close();
                                 $nextStatusText = $isActive ? 'Inactive' : 'Active';
                                 ?>
                                 <form method="POST" style="display:inline;" onsubmit="return confirmStatusChange('<?php echo htmlspecialchars($user['username']); ?>','<?php echo $nextStatusText; ?>')">
-                                    <input type="hidden" name="fnc_user_id" value="<?php echo $user['fnc_user_id']; ?>">
+                                    <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
                                     <input type="hidden" name="new_status" value="<?php echo $nextStatusInt; ?>">
                                     <input type="hidden" name="toggle_status" value="1">
                                     <button type="submit" class="status-badge <?php echo $statusClass; ?>" title="Click to change to <?php echo $nextStatusText; ?>">
@@ -531,10 +531,10 @@ $db->close();
                             </td>
                             <td>
                                 <div class="actions">
-                                    <a href="view-user.php?id=<?php echo $user['fnc_user_id']; ?>" class="btn-sm btn-view"><i class="fas fa-eye"></i>View</a>
-                                    <a href="edit_user.php?id=<?php echo $user['fnc_user_id']; ?>" class="btn-sm btn-edit"><i class="fas fa-edit"></i>Edit</a>
-                                    <?php if ($user['fnc_user_id'] != $fnc_user_id): ?>
-                                    <button class="btn-sm btn-delete" onclick="showDeleteModal(<?php echo $user['fnc_user_id']; ?>,'<?php echo addslashes(htmlspecialchars($user['username'])); ?>','<?php echo addslashes(htmlspecialchars($user['email'])); ?>')">
+                                    <a href="view-user.php?id=<?php echo $user['user_id']; ?>" class="btn-sm btn-view"><i class="fas fa-eye"></i>View</a>
+                                    <a href="edit_user.php?id=<?php echo $user['user_id']; ?>" class="btn-sm btn-edit"><i class="fas fa-edit"></i>Edit</a>
+                                    <?php if ($user['user_id'] != $user_id): ?>
+                                    <button class="btn-sm btn-delete" onclick="showDeleteModal(<?php echo $user['user_id']; ?>,'<?php echo addslashes(htmlspecialchars($user['username'])); ?>','<?php echo addslashes(htmlspecialchars($user['email'])); ?>')">
                                         <i class="fas fa-trash"></i>Delete
                                     </button>
                                     <?php endif; ?>
@@ -612,7 +612,7 @@ $db->close();
         <div class="modal-actions">
             <button type="button" class="btn-cancel" onclick="hideDeleteModal()">Cancel</button>
             <form method="POST" style="display:inline;">
-                <input type="hidden" name="fnc_user_id" id="deleteUserId">
+                <input type="hidden" name="user_id" id="deleteUserId">
                 <button type="submit" name="delete_user" class="btn-confirm-delete">Delete User</button>
             </form>
         </div>

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
         $_SESSION['messageType'] = 'error';
     } else {
         try {
-            $checkStmt = $conn->prepare("SELECT status FROM edu_user WHERE edu_user_id = ?");
+            $checkStmt = $conn->prepare("SELECT status FROM edu_user WHERE user_id = ?");
             $checkStmt->bind_param("i", $toggleUserId);
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
                     $_SESSION['messageType'] = 'error';
                 } else {
                     $conn->begin_transaction();
-                    $stmt = $conn->prepare("UPDATE edu_user SET status = ? WHERE edu_user_id = ?");
+                    $stmt = $conn->prepare("UPDATE edu_user SET status = ? WHERE user_id = ?");
                     if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
                     $stmt->bind_param("ii", $newStatusInt, $toggleUserId);
                     if ($stmt->execute()) {
@@ -105,18 +105,18 @@ if (isset($_POST['delete_user']) && isset($_POST['user_id'])) {
     } else {
         try {
             $conn->begin_transaction();
-            $stmt = $conn->prepare("SELECT username, email, driverId FROM edu_user WHERE edu_user_id = ?");
+            $stmt = $conn->prepare("SELECT username, email, driverId FROM edu_user WHERE user_id = ?");
             $stmt->bind_param("i", $deleteUserId);
             $stmt->execute();
             $result = $stmt->get_result();
             $deletedUser = $result->fetch_assoc();
             $stmt->close();
             if ($deletedUser) {
-                $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE edu_user_id = ?");
+                $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
-                $stmt = $conn->prepare("DELETE FROM edu_user WHERE edu_user_id = ?");
+                $stmt = $conn->prepare("DELETE FROM edu_user WHERE user_id = ?");
                 $stmt->bind_param("i", $deleteUserId);
                 $stmt->execute();
                 $stmt->close();
@@ -188,7 +188,7 @@ try {
         $totalActiveDrivers = $statsData['active_drivers'];
         $totalRecentLogins = $statsData['recent_logins'];
     }
-    $sql = "SELECT edu_user_id as user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM edu_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT user_id as user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM edu_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
     if ($whereClause) {
         $params[] = $limit; $params[] = $offset; $types .= 'ii';
         $stmt = $conn->prepare($sql);
@@ -212,7 +212,7 @@ if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN, COOKIE_SECURE, COOKIE_HTTPONLY);
         try {
-            $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE edu_user_id = ?");
+            $stmt = $conn->prepare("UPDATE edu_user SET token = NULL WHERE user_id = ?");
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $stmt->close();

@@ -26,7 +26,7 @@ try {
 // ── Fetch parents for dropdown ──
 $parents = [];
 try {
-    $res = $conn->query("SELECT edu_user_id, firstName, lastName, username FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
+    $res = $conn->query("SELECT user_id, firstName, lastName, username FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
     if ($res) while ($r = $res->fetch_assoc()) $parents[] = $r;
 } catch (Exception $e) { logAppError("Fetch parents: " . $e->getMessage()); }
 
@@ -348,7 +348,7 @@ $db->close();
                                         <select name="parent_id" class="fc">
                                             <option value="">-- Select Parent --</option>
                                             <?php foreach ($parents as $p): ?>
-                                            <option value="<?php echo $p['edu_user_id']; ?>" <?php echo $parent_id == $p['edu_user_id'] ? 'selected' : ''; ?>>
+                                            <option value="<?php echo $p['user_id']; ?>" <?php echo $parent_id == $p['user_id'] ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($p['firstName'] . ' ' . $p['lastName']); ?> (<?php echo htmlspecialchars($p['username']); ?>)
                                             </option>
                                             <?php endforeach; ?>

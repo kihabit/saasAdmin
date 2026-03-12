@@ -45,9 +45,11 @@ if (!isset($data->username) || !isset($data->password)) {
 
 $username = $conn->real_escape_string(trim($data->username));
 $password = $data->password;
-
+$cat = $conn->real_escape_string(trim(strtolower($data->cat)));
+$tableName = $cat."_user";
 // *** CRITICAL FIX: Query user by username AND include status field ***
-$sql = "SELECT user_id, driverId, email,userType, school_id, van_number, username, password_hash, status FROM user_login WHERE username = ?";
+$sql = "SELECT user_id, email,userType, organization_id, van_number, username, password_hash, status FROM ".$tableName." WHERE username = ?";
+echo $sql;
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -98,8 +100,8 @@ if ($result->num_rows === 1) {
             s.latitude,
             s.longitude,
             s.phone as school_number
-        FROM children c
-        LEFT JOIN user_login d 
+        FROM students c
+        LEFT JOIN $tablename d 
             ON c.driver_id = d.user_id left join school as s on s.id=d.school_id
         WHERE c.parent_id = ?";
         $prtStmt = $conn->prepare($parentSql);
@@ -143,7 +145,7 @@ if ($result->num_rows === 1) {
         }
         
         // Update last login timestamp
-        $updateSql = "UPDATE user_login SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?";
+        $updateSql = "UPDATE $tablename SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?";
         $updateStmt = $conn->prepare($updateSql);
         if ($updateStmt) {
             $updateStmt->bind_param("i", $user['user_id']);

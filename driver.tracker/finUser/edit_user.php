@@ -50,13 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $userErrors[] = 'Invalid email format.';
 
     if (empty($userErrors)) {
-        $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE username=? AND fnc_user_id!=?");
+        $stmt = $conn->prepare("SELECT user_id FROM fin_user WHERE username=? AND user_id!=?");
         $stmt->bind_param("si",$username,$view_user_id); $stmt->execute();
         if ($stmt->get_result()->num_rows > 0) $userErrors[] = 'Username already exists.';
         $stmt->close();
     }
     if (empty($userErrors)) {
-        $stmt = $conn->prepare("SELECT fnc_user_id FROM fin_user WHERE email=? AND fnc_user_id!=?");
+        $stmt = $conn->prepare("SELECT user_id FROM fin_user WHERE email=? AND user_id!=?");
         $stmt->bind_param("si",$email,$view_user_id); $stmt->execute();
         if ($stmt->get_result()->num_rows > 0) $userErrors[] = 'Email already exists.';
         $stmt->close();
@@ -73,13 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     if (empty($userErrors)) {
         try {
             $conn->begin_transaction();
-            $stmt = $conn->prepare("UPDATE fin_user SET username=?,firstName=?,lastName=?,email=?,driverId=?,phone_number=?,address=?,city=?,state=?,country=?,zipcode=?,userType=?,status=?,organization_id=?,organization_name=? WHERE fnc_user_id=?");
+            $stmt = $conn->prepare("UPDATE fin_user SET username=?,firstName=?,lastName=?,email=?,driverId=?,phone_number=?,address=?,city=?,state=?,country=?,zipcode=?,userType=?,status=?,organization_id=?,organization_name=? WHERE user_id=?");
             $stmt->bind_param("sssssssssssssssi",$username,$firstName,$lastName,$email,$driverId,$phone_number,$address,$city,$state,$country,$zipcode,$userType,$status,$organization_id,$organization_name,$view_user_id);
             $stmt->execute(); $stmt->close();
 
             if (!empty($newPassword)) {
                 $hashed = md5(trim($newPassword));
-                $stmt = $conn->prepare("UPDATE fin_user SET password_hash=? WHERE fnc_user_id=?");
+                $stmt = $conn->prepare("UPDATE fin_user SET password_hash=? WHERE user_id=?");
                 $stmt->bind_param("si",$hashed,$view_user_id); $stmt->execute(); $stmt->close();
             }
             $conn->commit();
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
 // Fetch user
 $user = null;
 try {
-    $stmt = $conn->prepare("SELECT u.fnc_user_id,u.driverId,u.username,u.firstName,u.lastName,u.email,u.phone_number,u.address,u.city,u.state,u.country,u.zipcode,u.latitude,u.longitude,u.userType,u.status,u.created_at,u.last_login,u.organization_id,u.organization_name, o.org_id as org_custom_id FROM fin_user u LEFT JOIN organization o ON o.id = u.organization_id WHERE u.fnc_user_id=?");
+    $stmt = $conn->prepare("SELECT u.user_id,u.driverId,u.username,u.firstName,u.lastName,u.email,u.phone_number,u.address,u.city,u.state,u.country,u.zipcode,u.latitude,u.longitude,u.userType,u.status,u.created_at,u.last_login,u.organization_id,u.organization_name, o.org_id as org_custom_id FROM fin_user u LEFT JOIN organization o ON o.id = u.organization_id WHERE u.user_id=?");
     $stmt->bind_param("i",$view_user_id); $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc(); $stmt->close();
     if (!$user) { setFlashMessage('error','User not found.'); redirect('users.php'); }
@@ -107,7 +107,7 @@ try {
 if (isset($_GET['logout'])) {
     if (isset($_COOKIE['remember_login'])) {
         setcookie('remember_login','',time()-3600,COOKIE_PATH,COOKIE_DOMAIN,COOKIE_SECURE,COOKIE_HTTPONLY);
-        try { $stmt=$conn->prepare("DELETE FROM edu_remember_tokens WHERE fnc_user_id=?"); $stmt->bind_param("i",$logged_user_id); $stmt->execute(); $stmt->close(); } catch(Exception $e){}
+        try { $stmt=$conn->prepare("DELETE FROM edu_remember_tokens WHERE user_id=?"); $stmt->bind_param("i",$logged_user_id); $stmt->execute(); $stmt->close(); } catch(Exception $e){}
     }
     session_unset(); session_destroy(); redirect(LOGIN_PAGE);
 }
@@ -258,7 +258,7 @@ $db->close();
                 <div class="info-grid">
                     <div class="info-item">
                         <span class="info-label">User ID</span>
-                        <span class="info-value">#<?php echo htmlspecialchars($user['fnc_user_id']); ?></span>
+                        <span class="info-value">#<?php echo htmlspecialchars($user['user_id']); ?></span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Created Date</span>
