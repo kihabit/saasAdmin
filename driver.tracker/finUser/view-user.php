@@ -9,7 +9,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
 $_SESSION['last_activity'] = time();
 $db = Database::getInstance();
 $conn = $db->getConnection();
-$logged_user_id = $_SESSION['user_id'] ?? 0;
+$logged_user_id = $_SESSION['user_id'];
 
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     setFlashMessage('error', 'User ID not provided.'); redirect('users.php');
@@ -18,7 +18,7 @@ $view_user_id = intval($_GET['id']);
 
 $user = null;
 try {
-    $stmt = $conn->prepare("SELECT u.fnc_user_id as fnc_user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
+    $stmt = $conn->prepare("SELECT u.fnc_user_id as user_id, u.driverId, u.username, u.firstName, u.lastName, u.email, 
                              u.phone_number, u.address, u.city, u.state, u.country, u.zipcode,
                              u.organization_id, u.organization_name, u.userType, u.status, u.created_at, u.last_login, u.latitude, u.longitude,
                              o.org_id as org_custom_id
@@ -145,7 +145,7 @@ $roleName = $roleNames[$ut] ?? 'Unknown';
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-id-card"></i> User ID</div>
-                            <div class="info-value">#<?php echo $user['fnc_user_id']; ?></div>
+                            <div class="info-value">#<?php echo $user['user_id']; ?></div>
                         </div>
                         <div class="info-item">
                             <div class="info-label"><i class="fas fa-car"></i> Driver ID</div>

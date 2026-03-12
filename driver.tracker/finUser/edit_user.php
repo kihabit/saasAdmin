@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $userType     = trim($_POST['userType']     ?? '');
     $status       = trim($_POST['status']       ?? '');
 
-    $organization_id   = !empty($_POST['organization_id'])   ? intval($_POST['organization_id']) : null;
-    $organization_name = !empty($_POST['organization_name']) ? trim($_POST['organization_name']) : null;
+    $organization_id   = !empty($_POST["organization_id"])   ? intval($_POST["organization_id"]) : null;
+    $organization_name = !empty($_POST["organization_name"]) ? trim($_POST["organization_name"]) : null;
 
     $userErrors = [];
     if (empty($username)) $userErrors[] = 'Username is required.';
@@ -294,10 +294,10 @@ $db->close();
                         <span class="info-value">📍 <?php echo htmlspecialchars(implode(', ', array_filter([$user['city']??'', $user['country']??'']))); ?></span>
                     </div>
                     <?php endif; ?>
-                    <?php if(!empty($user['organization_name'])): ?>
+                    <?php if(!empty($user["organization_name"])): ?>
                     <div class="info-item">
                         <span class="info-label">Current Organization</span>
-                        <span class="info-value" style="color:#0000FF;">🏫 <?php echo htmlspecialchars($user['organization_name']); ?> (Org ID: <?php echo htmlspecialchars($user['org_custom_id'] ?? $user['organization_id']); ?>)</span>
+                        <span class="info-value" style="color:#0000FF;">🏫 <?php echo htmlspecialchars($user["organization_name"]); ?> (Org ID: <?php echo htmlspecialchars($user['org_custom_id'] ?? $user["organization_id"]); ?>)</span>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -402,7 +402,7 @@ $db->close();
                                     <input type="text" id="schoolSearch" class="form-input"
                                         placeholder="Type organization name to search..."
                                         autocomplete="off"
-                                        value="<?php echo htmlspecialchars($user['organization_name']??''); ?>">
+                                        value="<?php echo htmlspecialchars($user["organization_name"]??''); ?>">
                                     <span id="schoolSpinner" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);">
                                         <span style="display:inline-block;width:13px;height:13px;border:2px solid #94a3b8;border-top-color:#0000FF;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
                                     </span>
@@ -411,9 +411,9 @@ $db->close();
                                         <div id="schoolDropdownBody"></div>
                                     </div>
                                 </div>
-                                <div class="organization-selected-badge <?php echo !empty($user['organization_name'])?'show':''; ?>" id="schoolSelectedBadge">
+                                <div class="organization-selected-badge <?php echo !empty($user["organization_name"])?'show':''; ?>" id="schoolSelectedBadge">
                                     <span>✅</span>
-                                    <span id="schoolSelectedText"><?php echo !empty($user['organization_name'])?htmlspecialchars($user['organization_name']).' | Org ID: '.htmlspecialchars($user['org_custom_id'] ?? $user['organization_id'] ?? ''):''; ?></span>
+                                    <span id="schoolSelectedText"><?php echo !empty($user["organization_name"])?htmlspecialchars($user["organization_name"]).' | Org ID: '.htmlspecialchars($user['org_custom_id'] ?? $user["organization_id"] ?? ''):''; ?></span>
                                     <button type="button" class="badge-clear" id="clearSchool">✕ Clear</button>
                                 </div>
                             </div>
@@ -426,11 +426,11 @@ $db->close();
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-building"></i>Organization Name</label>
                                     <input type="text" id="schoolNameDisplay" class="form-input organization-readonly" readonly
-                                        value="<?php echo htmlspecialchars($user['organization_name']??''); ?>" placeholder="Auto-filled">
+                                        value="<?php echo htmlspecialchars($user["organization_name"]??''); ?>" placeholder="Auto-filled">
                                 </div>
                             </div>
-                            <input type="hidden" name="organization_id"   id="school_id_hidden"   value="<?php echo htmlspecialchars($user['organization_id']??''); ?>">
-                            <input type="hidden" name="organization_name" id="school_name_hidden" value="<?php echo htmlspecialchars($user['organization_name']??''); ?>">
+                            <input type="hidden" name="organization_id"   id="school_id_hidden"   value="<?php echo htmlspecialchars($user["organization_id"]??''); ?>">
+                            <input type="hidden" name="organization_name" id="school_name_hidden" value="<?php echo htmlspecialchars($user["organization_name"]??''); ?>">
                         </div>
 
                         <!-- Password -->
