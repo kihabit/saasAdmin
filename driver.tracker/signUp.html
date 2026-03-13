@@ -165,7 +165,7 @@
                     <select id="role" class="form-select" required>
                         <option value="">-- Choose Type --</option>
                         <option value="school_admin">Organization Admin</option>
-                        <option value="school_staff">Organization Staff</option>
+                        <option value="school_staff">Branch Manager</option>
                         <option value="driver">Driver</option>
                         <option value="teacher">Teacher</option>
                         <option value="parent">Parent</option>
@@ -401,7 +401,7 @@ let currentResults    = [];
 
 async function searchSchools(query) {
     try {
-        const res  = await fetch(`search_school.php?q=${encodeURIComponent(query)}`);
+        const res  = await fetch(`organization/search_organization.php?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         return data.schools || [];
     } catch(e) {
