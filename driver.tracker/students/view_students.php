@@ -38,7 +38,7 @@ try {
                s.city          AS school_city,
                s.state         AS school_state
         FROM students c
-        LEFT JOIN user_login  ul ON c.parent_id = ul.user_id
+        LEFT JOIN edu_user     ul ON c.parent_id = ul.user_id
         LEFT JOIN organization s  ON c.organization_id = s.id
         WHERE c.id = ?
     ");

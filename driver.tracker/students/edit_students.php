@@ -25,19 +25,26 @@ $child_id = intval($_GET['id']);
 $errors   = [];
 $success  = '';
 
-// Fetch schools
+// Fetch organizations
 $schools = [];
 try {
     $res = $conn->query("SELECT id, name FROM organization ORDER BY name ASC");
     while ($row = $res->fetch_assoc()) $schools[] = $row;
 } catch (Exception $e) {}
 
-// Fetch parents
+// ✅ Fetch parents from edu_user (userType = 6)
 $parents = [];
 try {
-    $res = $conn->query("SELECT user_id, firstName, lastName, username FROM user_login ORDER BY firstName ASC");
+    $res = $conn->query("SELECT user_id, firstName, lastName, username FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
     while ($row = $res->fetch_assoc()) $parents[] = $row;
-} catch (Exception $e) {}
+} catch (Exception $e) { logAppError("Fetch parents: " . $e->getMessage()); }
+
+// ✅ Fetch drivers from edu_user (userType = 4)
+$drivers = [];
+try {
+    $res = $conn->query("SELECT driverId, firstName, lastName FROM edu_user WHERE userType = 4 ORDER BY firstName ASC");
+    while ($row = $res->fetch_assoc()) $drivers[] = $row;
+} catch (Exception $e) { logAppError("Fetch drivers: " . $e->getMessage()); }
 
 // Fetch child
 $child = null;
@@ -406,10 +413,18 @@ textarea.form-control{resize:vertical;min-height:75px}
                             </select>
                         </div>
 
+                        <!-- ✅ Driver dropdown (edu_user userType=4) -->
                         <div class="form-group">
-                            <label><i class="fas fa-car" style="color:#0000FF;font-size:.78rem;"></i> Driver ID</label>
-                            <input type="text" name="driver_id" class="form-control" placeholder="e.g. DRV001"
-                                   value="<?php echo htmlspecialchars($child['driver_id'] ?? ''); ?>">
+                            <label><i class="fas fa-bus" style="color:#0000FF;font-size:.78rem;"></i> Assigned Driver</label>
+                            <select name="driver_id" class="form-control">
+                                <option value="">— No Driver —</option>
+                                <?php foreach ($drivers as $d): ?>
+                                <option value="<?php echo htmlspecialchars($d['driverId']); ?>"
+                                    <?php echo ($child['driver_id'] == $d['driverId']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($d['firstName'].' '.$d['lastName'].' ('.$d['driverId'].')'); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
                             <span class="hint">Optional</span>
                         </div>
 
