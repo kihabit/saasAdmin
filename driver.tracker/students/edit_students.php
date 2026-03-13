@@ -32,17 +32,17 @@ try {
     while ($row = $res->fetch_assoc()) $schools[] = $row;
 } catch (Exception $e) {}
 
-// ✅ Fetch parents from edu_user (userType = 6)
+// ✅ Fetch ALL parents with organization_id
 $parents = [];
 try {
-    $res = $conn->query("SELECT user_id, firstName, lastName, username FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
+    $res = $conn->query("SELECT user_id, firstName, lastName, username, organization_id FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
     while ($row = $res->fetch_assoc()) $parents[] = $row;
 } catch (Exception $e) { logAppError("Fetch parents: " . $e->getMessage()); }
 
-// ✅ Fetch drivers from edu_user (userType = 4)
+// ✅ Fetch ALL drivers with organization_id
 $drivers = [];
 try {
-    $res = $conn->query("SELECT driverId, firstName, lastName FROM edu_user WHERE userType = 4 ORDER BY firstName ASC");
+    $res = $conn->query("SELECT driverId, firstName, lastName, organization_id FROM edu_user WHERE userType = 4 ORDER BY firstName ASC");
     while ($row = $res->fetch_assoc()) $drivers[] = $row;
 } catch (Exception $e) { logAppError("Fetch drivers: " . $e->getMessage()); }
 
@@ -69,11 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status         = trim($_POST['status']         ?? 'active');
     $organization_id      = intval($_POST['organization_id']    ?? 0) ?: null;
     $parent_id      = intval($_POST['parent_id']    ?? 0) ?: null;
-    $driver_id_val  = trim($_POST['driver_id']      ?? '') ?: null;
+    $driver_id_val  = isset($_POST['driver_id']) && $_POST['driver_id'] !== '' ? trim($_POST['driver_id']) : null;
     $pickup_address = trim($_POST['pickup_address'] ?? '');
     $drop_address   = trim($_POST['drop_address']   ?? '');
-    $pickup_lat     = trim($_POST['pickup_lat']     ?? '') ?: null;
-    $pickup_lng     = trim($_POST['pickup_lng']     ?? '') ?: null;
+    $pickup_lat     = (trim($_POST['pickup_lat'] ?? '') !== '') ? trim($_POST['pickup_lat']) : null;
+    $pickup_lng     = (trim($_POST['pickup_lng'] ?? '') !== '') ? trim($_POST['pickup_lng']) : null;
 
     if (empty($name))  $errors[] = 'Child name is required.';
     if (empty($class)) $errors[] = 'Class is required.';
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $child = $stmt2->get_result()->fetch_assoc(); $stmt2->close();
                 $success = "Child record updated successfully!";
             } else {
-                $errors[] = 'Database error. Please try again.';
+                $errors[] = 'Database error: ' . $stmt->error;
             }
             $stmt->close();
         } catch (Exception $e) {
@@ -137,6 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (isset($_GET['logout'])) { session_unset(); session_destroy(); redirect(LOGIN_PAGE); }
 $db->close();
+
+// Pass data to JS
+$parentsJson = json_encode($parents);
+$driversJson = json_encode($drivers);
+$currentOrgId    = $child['organization_id'] ?? '';
+$currentParentId = $child['parent_id'] ?? '';
+$currentDriverId = $child['driver_id'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -214,6 +221,11 @@ label .req{color:#dc2626}
 select.form-control{cursor:pointer}
 textarea.form-control{resize:vertical;min-height:75px}
 .hint{font-size:.74rem;color:#9ca3af;margin-top:3px}
+
+/* Filter badge */
+.filter-badge{display:none;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:7px;padding:5px 10px;font-size:.76rem;font-weight:500;margin-top:5px;align-items:center;gap:5px}
+.filter-badge.show{display:flex}
+.filter-badge i{font-size:.72rem}
 
 /* Coord wrapper */
 .coord-wrapper{position:relative}
@@ -386,23 +398,10 @@ textarea.form-control{resize:vertical;min-height:75px}
                 <div class="form-body">
                     <div class="form-grid">
 
-                        <div class="form-group">
-                            <label><i class="fas fa-user" style="color:#0000FF;font-size:.78rem;"></i> Parent / Guardian</label>
-                            <select name="parent_id" class="form-control">
-                                <option value="">— No Parent —</option>
-                                <?php foreach ($parents as $p): ?>
-                                <option value="<?php echo $p['user_id']; ?>"
-                                    <?php echo ($child['parent_id'] == $p['user_id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($p['firstName'].' '.$p['lastName'].' (@'.$p['username'].')'); ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <span class="hint">Parent ka account select karein</span>
-                        </div>
-
+                        <!-- Organization -->
                         <div class="form-group">
                             <label><i class="fas fa-building" style="color:#0000FF;font-size:.78rem;"></i> Organization</label>
-                            <select name="organization_id" class="form-control">
+                            <select name="organization_id" id="organizationSelect" class="form-control" onchange="filterByOrganization()">
                                 <option value="">— No Organization —</option>
                                 <?php foreach ($schools as $s): ?>
                                 <option value="<?php echo $s['id']; ?>"
@@ -411,20 +410,32 @@ textarea.form-control{resize:vertical;min-height:75px}
                                 </option>
                                 <?php endforeach; ?>
                             </select>
+                            <span class="hint">Select to filter parents & drivers</span>
                         </div>
 
-                        <!-- ✅ Driver dropdown (edu_user userType=4) -->
+                        <!-- Parent -->
+                        <div class="form-group">
+                            <label><i class="fas fa-user" style="color:#0000FF;font-size:.78rem;"></i> Parent / Guardian</label>
+                            <select name="parent_id" id="parentSelect" class="form-control">
+                                <option value="">— Select Organization First —</option>
+                            </select>
+                            <div class="filter-badge" id="parentBadge">
+                                <i class="fas fa-filter"></i>
+                                <span id="parentBadgeText"></span>
+                            </div>
+                            <span class="hint">Parent ka account select karein</span>
+                        </div>
+
+                        <!-- Driver -->
                         <div class="form-group">
                             <label><i class="fas fa-bus" style="color:#0000FF;font-size:.78rem;"></i> Assigned Driver</label>
-                            <select name="driver_id" class="form-control">
-                                <option value="">— No Driver —</option>
-                                <?php foreach ($drivers as $d): ?>
-                                <option value="<?php echo htmlspecialchars($d['driverId']); ?>"
-                                    <?php echo ($child['driver_id'] == $d['driverId']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($d['firstName'].' '.$d['lastName'].' ('.$d['driverId'].')'); ?>
-                                </option>
-                                <?php endforeach; ?>
+                            <select name="driver_id" id="driverSelect" class="form-control">
+                                <option value="">— Select Organization First —</option>
                             </select>
+                            <div class="filter-badge" id="driverBadge">
+                                <i class="fas fa-filter"></i>
+                                <span id="driverBadgeText"></span>
+                            </div>
                             <span class="hint">Optional</span>
                         </div>
 
@@ -470,7 +481,7 @@ textarea.form-control{resize:vertical;min-height:75px}
                                        oninput="showManual()">
                                 <button type="button" class="coord-clear" onclick="clearCoord('latField')" title="Clear"><i class="fas fa-times"></i></button>
                             </div>
-                            <span class="hint">Auto-fill karein ya manually type karein</span>
+                            <span class="hint">Auto-fill</span>
                         </div>
 
                         <div class="form-group">
@@ -482,7 +493,7 @@ textarea.form-control{resize:vertical;min-height:75px}
                                        oninput="showManual()">
                                 <button type="button" class="coord-clear" onclick="clearCoord('lngField')" title="Clear"><i class="fas fa-times"></i></button>
                             </div>
-                            <span class="hint">Auto-fill karein ya manually type karein</span>
+                            <span class="hint">Auto-fill</span>
                         </div>
 
                     </div>
@@ -531,71 +542,140 @@ textarea.form-control{resize:vertical;min-height:75px}
 </div>
 
 <script>
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar    = document.getElementById('sidebar');
-    const overlay    = document.getElementById('sidebarOverlay');
-    menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
-    overlay.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
-    window.addEventListener('resize',   () => { if(window.innerWidth>1024){sidebar.classList.remove('active');overlay.classList.remove('active');} });
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => { if(window.innerWidth<=1024){sidebar.classList.remove('active');overlay.classList.remove('active');} });
-    });
+// ── PHP data → JS ──
+const allParents      = <?php echo $parentsJson; ?>;
+const allDrivers      = <?php echo $driversJson; ?>;
+const currentOrgId    = "<?php echo addslashes($currentOrgId); ?>";
+const currentParentId = "<?php echo addslashes($currentParentId); ?>";
+const currentDriverId = "<?php echo addslashes($currentDriverId); ?>";
 
-    function previewPhoto(input) {
-        if (!input.files || !input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-            let img = document.getElementById('photoPreview');
-            const ph = document.getElementById('photoPlaceholder');
-            if (!img) {
-                img = document.createElement('img');
-                img.id = 'photoPreview'; img.className = 'photo-preview';
-                if (ph) ph.replaceWith(img);
-                else document.querySelector('.photo-preview-wrap').prepend(img);
-            }
-            img.src = e.target.result;
-            if (ph) ph.style.display = 'none';
-        };
-        reader.readAsDataURL(input.files[0]);
+// ── Filter dropdowns based on selected organization ──
+function filterByOrganization() {
+    const orgId      = document.getElementById('organizationSelect').value;
+    const parentSel  = document.getElementById('parentSelect');
+    const driverSel  = document.getElementById('driverSelect');
+    const parentBadge = document.getElementById('parentBadge');
+    const driverBadge = document.getElementById('driverBadge');
+
+    parentSel.innerHTML = '';
+    driverSel.innerHTML = '';
+
+    if (!orgId) {
+        parentSel.innerHTML = '<option value="">— Select Organization First —</option>';
+        driverSel.innerHTML = '<option value="">— Select Organization First —</option>';
+        parentBadge.classList.remove('show');
+        driverBadge.classList.remove('show');
+        return;
     }
 
-    function showStatus(type, msg) {
-        const el = document.getElementById('geocodeStatus');
-        el.className = 'geocode-status ' + type;
-        el.innerHTML = msg;
-    }
-    function showManual() {}
-    function clearCoord(id) {
-        document.getElementById(id).value = '';
-        if (!document.getElementById('latField').value && !document.getElementById('lngField').value)
-            document.getElementById('geocodeStatus').className = 'geocode-status';
-    }
-    function fetchCoords() {
-        const addr = document.getElementById('pickupAddr').value.trim();
-        if (!addr) { showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Pehle pickup address darj karein.'); return; }
-        const btn = document.getElementById('geocodeBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-        showStatus('loading','<i class="fas fa-spinner fa-spin"></i>&nbsp; Coordinates dhundh rahe hain...');
-        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addr + ', India') + '&limit=1', { headers:{'Accept-Language':'en'} })
-        .then(r => r.json())
-        .then(data => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Auto-fill from Pickup Address';
-            if (data && data.length > 0) {
-                document.getElementById('latField').value = parseFloat(data[0].lat).toFixed(8);
-                document.getElementById('lngField').value = parseFloat(data[0].lon).toFixed(8);
-                showStatus('success','<i class="fas fa-check-circle"></i>&nbsp; Coordinates mil gaye: ' + document.getElementById('latField').value + ', ' + document.getElementById('lngField').value);
-            } else {
-                showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Location nahi mila. Manually coordinates darj karein.');
-            }
-        })
-        .catch(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Auto-fill from Pickup Address';
-            showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Network error. Manually coordinates darj karein.');
+    // ── Filter Parents ──
+    const filteredParents = allParents.filter(p => String(p.organization_id) === String(orgId));
+    if (filteredParents.length === 0) {
+        parentSel.innerHTML = '<option value="">— No parents found for this school —</option>';
+    } else {
+        parentSel.innerHTML = '<option value="">— No Parent —</option>';
+        filteredParents.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.user_id;
+            opt.textContent = p.firstName + ' ' + p.lastName + ' (@' + p.username + ')';
+            if (String(p.user_id) === String(currentParentId)) opt.selected = true;
+            parentSel.appendChild(opt);
         });
     }
+    document.getElementById('parentBadgeText').textContent = filteredParents.length + ' parent(s) available';
+    parentBadge.classList.add('show');
+
+    // ── Filter Drivers ──
+    const filteredDrivers = allDrivers.filter(d => String(d.organization_id) === String(orgId));
+    if (filteredDrivers.length === 0) {
+        driverSel.innerHTML = '<option value="">— No drivers found for this school —</option>';
+    } else {
+        driverSel.innerHTML = '<option value="">— No Driver —</option>';
+        filteredDrivers.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.driverId;
+            opt.textContent = d.firstName + ' ' + d.lastName + ' (' + d.driverId + ')';
+            if (String(d.driverId) === String(currentDriverId)) opt.selected = true;
+            driverSel.appendChild(opt);
+        });
+    }
+    document.getElementById('driverBadgeText').textContent = filteredDrivers.length + ' driver(s) available';
+    driverBadge.classList.add('show');
+}
+
+// ── On page load: auto-trigger filter with existing org ──
+window.addEventListener('DOMContentLoaded', () => {
+    if (currentOrgId) {
+        filterByOrganization();
+    }
+});
+
+// ── Sidebar ──
+const menuToggle = document.getElementById('menuToggle');
+const sidebar    = document.getElementById('sidebar');
+const overlay    = document.getElementById('sidebarOverlay');
+menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+overlay.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+window.addEventListener('resize',   () => { if(window.innerWidth>1024){sidebar.classList.remove('active');overlay.classList.remove('active');} });
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => { if(window.innerWidth<=1024){sidebar.classList.remove('active');overlay.classList.remove('active');} });
+});
+
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        let img = document.getElementById('photoPreview');
+        const ph = document.getElementById('photoPlaceholder');
+        if (!img) {
+            img = document.createElement('img');
+            img.id = 'photoPreview'; img.className = 'photo-preview';
+            if (ph) ph.replaceWith(img);
+            else document.querySelector('.photo-preview-wrap').prepend(img);
+        }
+        img.src = e.target.result;
+        if (ph) ph.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function showStatus(type, msg) {
+    const el = document.getElementById('geocodeStatus');
+    el.className = 'geocode-status ' + type;
+    el.innerHTML = msg;
+}
+function showManual() {}
+function clearCoord(id) {
+    document.getElementById(id).value = '';
+    if (!document.getElementById('latField').value && !document.getElementById('lngField').value)
+        document.getElementById('geocodeStatus').className = 'geocode-status';
+}
+function fetchCoords() {
+    const addr = document.getElementById('pickupAddr').value.trim();
+    if (!addr) { showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Pehle pickup address darj karein.'); return; }
+    const btn = document.getElementById('geocodeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+    showStatus('loading','<i class="fas fa-spinner fa-spin"></i>&nbsp; Coordinates dhundh rahe hain...');
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addr + ', India') + '&limit=1', { headers:{'Accept-Language':'en'} })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Auto-fill from Pickup Address';
+        if (data && data.length > 0) {
+            document.getElementById('latField').value = parseFloat(data[0].lat).toFixed(8);
+            document.getElementById('lngField').value = parseFloat(data[0].lon).toFixed(8);
+            showStatus('success','<i class="fas fa-check-circle"></i>&nbsp; Coordinates mil gaye: ' + document.getElementById('latField').value + ', ' + document.getElementById('lngField').value);
+        } else {
+            showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Location nahi mila. Manually coordinates darj karein.');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Auto-fill from Pickup Address';
+        showStatus('error','<i class="fas fa-exclamation-circle"></i>&nbsp; Network error. Manually coordinates darj karein.');
+    });
+}
 </script>
 </body>
 </html>

@@ -90,7 +90,7 @@ try {
     $activeResult = $conn->query("SELECT COUNT(*) as total FROM students WHERE status = 'active'");
     if ($activeResult) $totalActive = $activeResult->fetch_assoc()['total'];
 
-    // ✅ edu_user se parent + driver info JOIN karke fetch karo
+    // ✅ organization table se naam JOIN karke fetch karo
     $sql = "SELECT c.id, c.organization_id, c.parent_id, c.driver_id, c.name, c.class, c.section,
                    c.roll_number, c.gender, c.dob, c.photo, c.pickup_address, c.drop_address,
                    c.pickup_lat, c.pickup_lng, c.status, c.created_at, c.updated_at,
@@ -100,10 +100,12 @@ try {
                    p.phone_number AS parent_phone,
                    d.firstName    AS driver_firstName,
                    d.lastName     AS driver_lastName,
-                   d.user_id      AS driver_user_id
+                   d.user_id      AS driver_user_id,
+                   o.name         AS organization_name
             FROM students c
             LEFT JOIN edu_user p ON c.parent_id = p.user_id
             LEFT JOIN edu_user d ON c.driver_id = d.driverId
+            LEFT JOIN organization o ON c.organization_id = o.id
             $whereClause
             ORDER BY c.created_at DESC
             LIMIT ? OFFSET ?";
@@ -225,11 +227,14 @@ $db->close();
         .child-details h4 { font-weight: 600; color: #1a202c; margin-bottom: 1px; font-size: .88rem; }
         .child-details p { font-size: .76rem; color: #718096; }
 
-        /* ✅ Parent info styles */
         .parent-info { font-size: .82rem; line-height: 1.5; }
         .parent-info strong { color: #1a202c; display: block; font-size: .84rem; }
         .parent-info span { color: #718096; font-size: .75rem; }
         .parent-info .parent-phone { color: #0000FF; font-size: .75rem; }
+
+        /* ✅ Organization badge */
+        .org-badge { display: inline-flex; align-items: center; gap: 5px; background: #eff6ff; color: #1d4ed8; padding: 3px 9px; border-radius: 20px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+        .org-badge i { font-size: .7rem; }
 
         .gender-badge { padding: 3px 9px; border-radius: 20px; font-size: .73rem; font-weight: 600; }
         .gender-male   { background: #dbeafe; color: #1d4ed8; }
@@ -377,6 +382,7 @@ $db->close();
                             <th>Child</th>
                             <th>Parent</th>
                             <th>Driver</th>
+                            <th>Organization</th>
                             <th>Class / Section</th>
                             <th>Roll No.</th>
                             <th>Pickup Address</th>
@@ -403,7 +409,7 @@ $db->close();
                                 </div>
                             </div>
                         </td>
-                        <!-- ✅ Parent naam -->
+                        <!-- Parent naam -->
                         <td>
                             <?php if (!empty($child['parent_firstName']) || !empty($child['parent_lastName'])): ?>
                                 <div class="parent-info">
@@ -419,7 +425,7 @@ $db->close();
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
-                        <!-- ✅ Driver naam -->
+                        <!-- Driver naam -->
                         <td>
                             <?php if (!empty($child['driver_firstName']) || !empty($child['driver_lastName'])): ?>
                                 <div class="parent-info">
@@ -428,6 +434,17 @@ $db->close();
                                         <span style="color:#718096;font-size:.73rem;">ID: <?php echo htmlspecialchars($child['driver_user_id']); ?></span>
                                     <?php endif; ?>
                                 </div>
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <!-- ✅ Organization naam -->
+                        <td>
+                            <?php if (!empty($child['organization_name'])): ?>
+                                <span class="org-badge">
+                                    <i class="fas fa-school"></i>
+                                    <?php echo htmlspecialchars($child['organization_name']); ?>
+                                </span>
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>

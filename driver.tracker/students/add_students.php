@@ -23,17 +23,17 @@ try {
     if ($res) while ($r = $res->fetch_assoc()) $organizations[] = $r;
 } catch (Exception $e) { logAppError("Fetch orgs: " . $e->getMessage()); }
 
-// ── Fetch parents for dropdown ──
+// ── Fetch ALL parents with organization_id ──
 $parents = [];
 try {
-    $res = $conn->query("SELECT user_id, firstName, lastName, username FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
+    $res = $conn->query("SELECT user_id, firstName, lastName, username, organization_id FROM edu_user WHERE userType = 6 ORDER BY firstName ASC");
     if ($res) while ($r = $res->fetch_assoc()) $parents[] = $r;
 } catch (Exception $e) { logAppError("Fetch parents: " . $e->getMessage()); }
 
-// ── Fetch drivers for dropdown ──
+// ── Fetch ALL drivers with organization_id ──
 $drivers = [];
 try {
-    $res = $conn->query("SELECT driverId, firstName, lastName FROM edu_user WHERE userType = 4 ORDER BY firstName ASC");
+    $res = $conn->query("SELECT driverId, firstName, lastName, organization_id FROM edu_user WHERE userType = 4 ORDER BY firstName ASC");
     if ($res) while ($r = $res->fetch_assoc()) $drivers[] = $r;
 } catch (Exception $e) { logAppError("Fetch drivers: " . $e->getMessage()); }
 
@@ -44,20 +44,20 @@ $organization_id = $parent_id = $driver_id_val = '';
 
 // ── Handle POST ──
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name           = trim($_POST['name']           ?? '');
-    $organization_id      = trim($_POST['organization_id']      ?? '');
-    $parent_id      = trim($_POST['parent_id']      ?? '');
-    $driver_id_val  = trim($_POST['driver_id']      ?? '');
-    $class          = trim($_POST['class']          ?? '');
-    $section        = trim($_POST['section']        ?? '');
-    $roll_number    = trim($_POST['roll_number']    ?? '');
-    $gender         = trim($_POST['gender']         ?? '');
-    $dob            = trim($_POST['dob']            ?? '');
-    $pickup_address = trim($_POST['pickup_address'] ?? '');
-    $drop_address   = trim($_POST['drop_address']   ?? '');
-    $pickup_lat     = trim($_POST['pickup_lat']     ?? '');
-    $pickup_lng     = trim($_POST['pickup_lng']     ?? '');
-    $status         = trim($_POST['status']         ?? 'active');
+    $name            = trim($_POST['name']            ?? '');
+    $organization_id = trim($_POST['organization_id'] ?? '');
+    $parent_id       = trim($_POST['parent_id']       ?? '');
+    $driver_id_val   = trim($_POST['driver_id']       ?? '');
+    $class           = trim($_POST['class']           ?? '');
+    $section         = trim($_POST['section']         ?? '');
+    $roll_number     = trim($_POST['roll_number']     ?? '');
+    $gender          = trim($_POST['gender']          ?? '');
+    $dob             = trim($_POST['dob']             ?? '');
+    $pickup_address  = trim($_POST['pickup_address']  ?? '');
+    $drop_address    = trim($_POST['drop_address']    ?? '');
+    $pickup_lat      = trim($_POST['pickup_lat']      ?? '');
+    $pickup_lng      = trim($_POST['pickup_lng']      ?? '');
+    $status          = trim($_POST['status']          ?? 'active');
 
     if (empty($name))           $errors[] = 'Student name is required.';
     if (empty($class))          $errors[] = 'Class is required.';
@@ -69,20 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $sid  = !empty($organization_id)     ? intval($organization_id)    : null;
-            $pid  = !empty($parent_id)     ? intval($parent_id)    : null;
-            $did  = !empty($driver_id_val) ? $driver_id_val        : null;
-            $dobv = !empty($dob)           ? $dob                  : null;
-            $lat  = !empty($pickup_lat)    ? floatval($pickup_lat) : null;
-            $lng  = !empty($pickup_lng)    ? floatval($pickup_lng) : null;
-            $sec  = !empty($section)       ? $section              : null;
-            $rno  = !empty($roll_number)   ? $roll_number          : null;
-            $gen  = !empty($gender)        ? $gender               : null;
+            $sid  = !empty($organization_id) ? intval($organization_id) : null;
+            $pid  = !empty($parent_id)       ? intval($parent_id)       : null;
+            $did  = !empty($driver_id_val)   ? $driver_id_val           : null;
+            $dobv = !empty($dob)             ? $dob                     : null;
+            $lat  = !empty($pickup_lat)      ? floatval($pickup_lat)    : null;
+            $lng  = !empty($pickup_lng)      ? floatval($pickup_lng)    : null;
+            $sec  = !empty($section)         ? $section                 : null;
+            $rno  = !empty($roll_number)     ? $roll_number             : null;
+            $gen  = !empty($gender)          ? $gender                  : null;
 
             $stmt = $conn->prepare("INSERT INTO students
                 (organization_id, parent_id, driver_id, name, class, section, roll_number, gender, dob, pickup_address, drop_address, pickup_lat, pickup_lng, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-         $stmt->bind_param("iisssssssssdds",
+            $stmt->bind_param("iisssssssssdds",
                 $sid, $pid, $did,
                 $name, $class, $sec, $rno, $gen, $dobv,
                 $pickup_address, $drop_address,
@@ -105,6 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (isset($_GET['logout'])) { session_unset(); session_destroy(); redirect(LOGIN_PAGE); }
 $db->close();
+
+// ── Pass parents & drivers as JSON to JS ──
+$parentsJson = json_encode($parents);
+$driversJson = json_encode($drivers);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -179,8 +183,13 @@ $db->close();
         .fc:focus { border-color: #0000FF; background: white; box-shadow: 0 0 0 3px rgba(0,0,255,0.08); }
         .fc::placeholder { color: #9ca3af; }
         select.fc { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%2394a3b8' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
+        select.fc:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
         textarea.fc { min-height: 80px; resize: vertical; padding-top: 10px; }
         .hint { font-size: 0.75rem; color: #9ca3af; margin-top: 3px; }
+        /* ── Filter info badge ── */
+        .filter-badge { display: none; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 7px; padding: 6px 12px; font-size: 0.78rem; font-weight: 500; margin-top: 6px; align-items: center; gap: 6px; }
+        .filter-badge.show { display: flex; }
+        .filter-badge i { font-size: 0.75rem; }
         /* ── Geocode ── */
         .geocode-status { padding: 7px 11px; border-radius: 7px; font-size: 0.82rem; font-weight: 500; margin-top: 7px; display: none; align-items: center; gap: 7px; }
         .geocode-status.loading { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; display: flex; }
@@ -328,10 +337,11 @@ $db->close();
                                 <span class="section-label-left"><i class="fas fa-school"></i> School, Parent & Driver</span>
                             </div>
                             <div class="fg3">
+                                <!-- Organization -->
                                 <div class="form-group">
                                     <label class="form-label">School / Organization</label>
                                     <div class="iw"><i class="fas fa-building ii"></i>
-                                        <select name="organization_id" class="fc">
+                                        <select name="organization_id" id="organizationSelect" class="fc" onchange="filterByOrganization()">
                                             <option value="">-- Select School --</option>
                                             <?php foreach ($organizations as $org): ?>
                                             <option value="<?php echo $org['id']; ?>" <?php echo $organization_id == $org['id'] ? 'selected' : ''; ?>>
@@ -340,33 +350,35 @@ $db->close();
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
-                                    <span class="hint">Optional</span>
+                                    <span class="hint">Optional — select to filter parents & drivers</span>
                                 </div>
+
+                                <!-- Parent -->
                                 <div class="form-group">
                                     <label class="form-label">Parent / Guardian</label>
                                     <div class="iw"><i class="fas fa-user-friends ii"></i>
-                                        <select name="parent_id" class="fc">
-                                            <option value="">-- Select Parent --</option>
-                                            <?php foreach ($parents as $p): ?>
-                                            <option value="<?php echo $p['user_id']; ?>" <?php echo $parent_id == $p['user_id'] ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($p['firstName'] . ' ' . $p['lastName']); ?> (<?php echo htmlspecialchars($p['username']); ?>)
-                                            </option>
-                                            <?php endforeach; ?>
+                                        <select name="parent_id" id="parentSelect" class="fc">
+                                            <option value="">-- Select Organization First --</option>
                                         </select>
+                                    </div>
+                                    <div class="filter-badge" id="parentBadge">
+                                        <i class="fas fa-filter"></i>
+                                        <span id="parentBadgeText"></span>
                                     </div>
                                     <span class="hint">Optional</span>
                                 </div>
+
+                                <!-- Driver -->
                                 <div class="form-group">
                                     <label class="form-label">Assigned Driver</label>
                                     <div class="iw"><i class="fas fa-bus ii"></i>
-                                        <select name="driver_id" class="fc">
-                                            <option value="">-- Select Driver --</option>
-                                            <?php foreach ($drivers as $d): ?>
-                                            <option value="<?php echo htmlspecialchars($d['driverId']); ?>" <?php echo $driver_id_val == $d['driverId'] ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($d['firstName'] . ' ' . $d['lastName']); ?> (<?php echo htmlspecialchars($d['driverId']); ?>)
-                                            </option>
-                                            <?php endforeach; ?>
+                                        <select name="driver_id" id="driverSelect" class="fc">
+                                            <option value="">-- Select Organization First --</option>
                                         </select>
+                                    </div>
+                                    <div class="filter-badge" id="driverBadge">
+                                        <i class="fas fa-filter"></i>
+                                        <span id="driverBadgeText"></span>
                                     </div>
                                     <span class="hint">Optional</span>
                                 </div>
@@ -436,14 +448,85 @@ $db->close();
 </div>
 
 <script>
-// Sidebar
+// ── PHP data → JS ──
+const allParents = <?php echo $parentsJson; ?>;
+const allDrivers = <?php echo $driversJson; ?>;
+const savedParentId    = "<?php echo addslashes($parent_id); ?>";
+const savedDriverId    = "<?php echo addslashes($driver_id_val); ?>";
+const savedOrgId       = "<?php echo addslashes($organization_id); ?>";
+
+// ── Filter dropdowns based on selected organization ──
+function filterByOrganization() {
+    const orgId      = document.getElementById('organizationSelect').value;
+    const parentSel  = document.getElementById('parentSelect');
+    const driverSel  = document.getElementById('driverSelect');
+    const parentBadge = document.getElementById('parentBadge');
+    const driverBadge = document.getElementById('driverBadge');
+
+    // Reset dropdowns
+    parentSel.innerHTML = '';
+    driverSel.innerHTML = '';
+
+    if (!orgId) {
+        // No organization selected — show placeholder
+        parentSel.innerHTML = '<option value="">-- Select Organization First --</option>';
+        driverSel.innerHTML = '<option value="">-- Select Organization First --</option>';
+        parentBadge.classList.remove('show');
+        driverBadge.classList.remove('show');
+        return;
+    }
+
+    // ── Filter Parents ──
+    const filteredParents = allParents.filter(p => String(p.organization_id) === String(orgId));
+    if (filteredParents.length === 0) {
+        parentSel.innerHTML = '<option value="">-- No parents found for this school --</option>';
+    } else {
+        parentSel.innerHTML = '<option value="">-- Select Parent --</option>';
+        filteredParents.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.user_id;
+            opt.textContent = p.firstName + ' ' + p.lastName + ' (@' + p.username + ')';
+            if (String(p.user_id) === String(savedParentId)) opt.selected = true;
+            parentSel.appendChild(opt);
+        });
+    }
+    document.getElementById('parentBadgeText').textContent = filteredParents.length + ' parent(s) available';
+    parentBadge.classList.add('show');
+
+    // ── Filter Drivers ──
+    const filteredDrivers = allDrivers.filter(d => String(d.organization_id) === String(orgId));
+    if (filteredDrivers.length === 0) {
+        driverSel.innerHTML = '<option value="">-- No drivers found for this school --</option>';
+    } else {
+        driverSel.innerHTML = '<option value="">-- Select Driver --</option>';
+        filteredDrivers.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.driverId;
+            opt.textContent = d.firstName + ' ' + d.lastName + ' (' + d.driverId + ')';
+            if (String(d.driverId) === String(savedDriverId)) opt.selected = true;
+            driverSel.appendChild(opt);
+        });
+    }
+    document.getElementById('driverBadgeText').textContent = filteredDrivers.length + ' driver(s) available';
+    driverBadge.classList.add('show');
+}
+
+// ── On page load: trigger filter if org already selected (e.g. after POST error) ──
+window.addEventListener('DOMContentLoaded', () => {
+    if (savedOrgId) {
+        document.getElementById('organizationSelect').value = savedOrgId;
+        filterByOrganization();
+    }
+});
+
+// ── Sidebar ──
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
 document.getElementById('menuToggle').addEventListener('click', () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
 overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
 window.addEventListener('resize', () => { if(window.innerWidth > 1024){ sidebar.classList.remove('active'); overlay.classList.remove('active'); }});
 
-// Geocode
+// ── Geocode ──
 function showStatus(type, msg) {
     const el = document.getElementById('geocodeStatus');
     el.className = 'geocode-status ' + type;

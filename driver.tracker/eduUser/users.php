@@ -188,7 +188,7 @@ try {
         $totalActiveDrivers = $statsData['active_drivers'];
         $totalRecentLogins = $statsData['recent_logins'];
     }
-    $sql = "SELECT user_id as user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude FROM edu_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT user_id as user_id, driverId, username, firstName, lastName, email, status, created_at, last_login, userType, latitude, longitude, organization_name FROM edu_user $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
     if ($whereClause) {
         $params[] = $limit; $params[] = $offset; $types .= 'ii';
         $stmt = $conn->prepare($sql);
@@ -324,7 +324,7 @@ $db->close();
         .status-inactive{background:#fee2e2;color:#991b1b;}
         .status-inactive:hover{background:#fca5a5;}
         .date-text{color:#4a5568;font-size:.76rem;white-space:nowrap;line-height:1.4;}
-        .users-table th:nth-child(6),.users-table td:nth-child(6){min-width:130px;}
+        .users-table th:nth-child(7),.users-table td:nth-child(7){min-width:130px;}
         .actions{display:flex;gap:6px;align-items:center;}
         .btn-sm{padding:5px 10px;border-radius:7px;font-size:.72rem;border:none;cursor:pointer;transition:all 0.3s ease;text-decoration:none;display:flex;align-items:center;gap:4px;}
         .btn-view{background:#f0f9ff;color:#0369a1;}
@@ -472,6 +472,7 @@ $db->close();
                             <th>User</th>
                             <th>Driver ID</th>
                             <th>User Type</th>
+                            <th>Organization</th>
                             <th>Email</th>
                             <th>Status</th>
                             <th>Joined</th>
@@ -510,6 +511,13 @@ $db->close();
                                 $ut = intval($user['userType'] ?? 0);
                                 echo isset($roleNames[$ut]) ? htmlspecialchars($roleNames[$ut]) : '—';
                                 ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($user['organization_name'])): ?>
+                                    <?php echo htmlspecialchars($user['organization_name']); ?>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td><?php echo htmlspecialchars($user['email']); ?></td>
                             <td>
