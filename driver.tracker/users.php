@@ -496,7 +496,7 @@ $db->close();
                             </td>
                             <td style="white-space:nowrap;">
                                 <?php
-                                $roleNames = [1=>'Super Admin',2=>'Organization Admin',3=>'Organization Staff',4=>'Driver',5=>'Teacher',6=>'Parent'];
+                                $roleNames = [1=>'Super Admin',2=>'Organization Admin',3=>'Branch Manager',4=>'Driver',5=>'Teacher',6=>'Parent'];
                                 $ut = intval($user['userType'] ?? 0);
                                 echo isset($roleNames[$ut]) ? htmlspecialchars($roleNames[$ut]) : '—';
                                 ?>
