@@ -17,6 +17,17 @@ $driver_id = $_SESSION['driver_id'] ?? null;
 
 $errors = [];
 $name = $address = $city = $state = $postal_code = $phone = $email = $latitude = $longitude = $org_id = '';
+$parent_id = null;
+
+// Fetch parent organizations (parent_id IS NULL wali)
+$parent_orgs = [];
+$pStmt = $conn->prepare("SELECT id, name, org_id FROM organization WHERE parent_id IS NULL ORDER BY name ASC");
+$pStmt->execute();
+$pResult = $pStmt->get_result();
+while ($row = $pResult->fetch_assoc()) {
+    $parent_orgs[] = $row;
+}
+$pStmt->close();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = trim($_POST['name']        ?? '');
@@ -30,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email       = trim($_POST['email']       ?? '');
     $latitude    = trim($_POST['latitude']    ?? '');
     $longitude   = trim($_POST['longitude']   ?? '');
+    $parent_id   = !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null;
 
     if (empty($name))        $errors[] = 'Organization name is required.';
     if (empty($industry_id)) $errors[] = 'Industry is required.';
@@ -49,17 +61,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $stmt = $conn->prepare("INSERT INTO organization 
-(name, industry_id, org_id, address, city, state, postal_code, phone, email, latitude, longitude) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+(name, industry_id, org_id, parent_id, address, city, state, postal_code, phone, email, latitude, longitude) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             if (!$stmt) { die("Prepare failed: " . $conn->error); }
 
-            $stmt->bind_param('sisssssssss', $name, $industry_id, $org_id, $address, $city, $state, $postal_code, $phone, $email, $latitude, $longitude);
+            $stmt->bind_param('sisissssssss', 
+                $name, $industry_id, $org_id, $parent_id,
+                $address, $city, $state, $postal_code, $phone, $email, $latitude, $longitude);
 
             if (!$stmt->execute()) { die("Execute failed: " . $stmt->error); }
 
-            echo "Insert successful!";
-            $stmt->close();
+            header('Location: organization.php?success=1');
+            exit;
         } catch (Exception $e) {
             logAppError("addOrganization: " . $e->getMessage());
             $errors[] = 'Error saving organization. Please try again.';
@@ -81,8 +95,6 @@ if (isset($_GET['logout'])) { session_unset(); session_destroy(); redirect(LOGIN
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height:1.6}
 .app-container{display:flex;min-height:100vh}
-
-/* Sidebar */
 .sidebar{width:280px;background:white;border-right:1px solid #e2e8f0;position:fixed;height:100vh;left:0;top:0;z-index:1000;overflow-y:auto;transition:transform .3s ease}
 .sidebar-header{padding:1.5rem;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#0000FF,#4169E1);color:white}
 .sidebar-logo{display:flex;align-items:center;gap:12px}
@@ -97,8 +109,6 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
 .nav-item:hover,.nav-item.active{background:#f7fafc;color:#0000FF;border-left-color:#0000FF}
 .nav-item i{width:20px;text-align:center;font-size:1.1rem}
 .nav-item .nav-text{flex:1}
-
-/* Main */
 .main-wrapper{flex:1;margin-left:280px;transition:margin-left .3s}
 .header{background:white;border-bottom:1px solid #e2e8f0;padding:.75rem 2rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .header-content{display:flex;justify-content:space-between;align-items:center}
@@ -109,20 +119,14 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1a202c;line-height
 .breadcrumb a{color:#0000FF;text-decoration:none}
 .logout-btn{background:#dc3545;color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:500;font-size:.85rem;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .3s}
 .logout-btn:hover{background:#c82333;transform:translateY(-1px)}
-
-/* Content */
 .main-content{padding:1.5rem 2rem}
 .page-header{margin-bottom:1.5rem}
 .page-header h1{font-size:1.35rem;font-weight:700;margin-bottom:2px}
 .page-header p{color:#718096;font-size:.82rem}
-
-/* Alert */
 .alert{padding:.9rem 1.25rem;border-radius:10px;display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:.9rem;margin-bottom:1.25rem}
 .alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
 .alert ul{margin:.4rem 0 0 1rem}
 .alert ul li{margin-bottom:3px;font-weight:400}
-
-/* Form Card */
 .form-card{background:white;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden}
 .form-card-header{padding:1rem 1.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc}
 .form-card-title{font-size:1rem;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:8px}
@@ -138,19 +142,13 @@ label .req{color:#dc2626}
 textarea.form-control{resize:vertical;min-height:80px}
 .hint{font-size:.76rem;color:#9ca3af;margin-top:3px}
 .section-label{font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;grid-column:1 / -1;padding-bottom:.4rem;border-bottom:1px solid #f1f5f9;margin-top:.25rem;display:flex;align-items:center;justify-content:space-between}
-
-/* Actions */
 .form-actions{display:flex;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #e2e8f0}
 .btn-submit{background:#0000FF;color:white;border:none;padding:10px 22px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem;font-family:inherit;display:flex;align-items:center;gap:7px;transition:all .3s}
 .btn-submit:hover{background:#0000CC;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,255,.3)}
 .btn-back{background:#f3f4f6;color:#4a5568;border:none;padding:10px 20px;border-radius:10px;font-weight:500;font-size:.9rem;font-family:inherit;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s}
 .btn-back:hover{background:#e5e7eb}
-
-/* Sidebar overlay */
 .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:999;display:none}
 .sidebar-overlay.active{display:block}
-
-/* Geocode */
 .geocode-status{padding:7px 11px;border-radius:8px;font-size:.82rem;font-weight:500;margin-top:7px;display:none;align-items:center;gap:7px}
 .geocode-status.loading{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;display:flex}
 .geocode-status.success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;display:flex}
@@ -163,7 +161,6 @@ textarea.form-control{resize:vertical;min-height:80px}
 .autofill-btn:hover{background:#0000CC}
 .autofill-btn:disabled{background:#94a3b8;cursor:not-allowed}
 .manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:#059669;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;padding:2px 7px;margin-left:7px;vertical-align:middle}
-
 @media(max-width:1024px){
     .sidebar{transform:translateX(-100%)}.sidebar.active{transform:translateX(0)}
     .main-wrapper{margin-left:0}.menu-toggle{display:block}
@@ -274,6 +271,25 @@ textarea.form-control{resize:vertical;min-height:80px}
                                    style="text-transform:uppercase;letter-spacing:2px;font-weight:600;"
                                    required>
                             <span class="hint">Auto-generated</span>
+                        </div>
+
+                        <!-- ✅ Parent Organization Dropdown -->
+                        <div class="form-group full-width">
+                            <label>
+                                <i class="fas fa-sitemap" style="color:#0000FF;font-size:.8rem;"></i>
+                                Parent Organization
+                                <span style="font-size:.72rem;color:#9ca3af;font-weight:400;margin-left:6px;">(Optional)</span>
+                            </label>
+                            <select name="parent_id" class="form-control">
+                                <option value="">-- Independent Organization --</option>
+                                <?php foreach($parent_orgs as $po): ?>
+                                    <option value="<?= $po['id']; ?>" <?= ($parent_id == $po['id']) ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($po['name']); ?> 
+                                        (<?= htmlspecialchars($po['org_id']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <span class="hint"></span>
                         </div>
 
                         <div class="section-label">Location</div>

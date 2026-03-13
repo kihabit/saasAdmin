@@ -33,7 +33,19 @@ try {
         exit;
     }
 
-    if (!in_array($data['role'], ['school_admin', 'school_staff', 'driver', 'teacher', 'parent'])) {
+    // ✅ Roles dynamically fetch karo DB se (prt=0, super_admin exclude)
+    $roleMap = [];
+    $rStmt = $conn->prepare("SELECT id, role_name FROM roles WHERE prt = 0 ORDER BY id ASC");
+    $rStmt->execute();
+    $rResult = $rStmt->get_result();
+    while ($rRow = $rResult->fetch_assoc()) {
+        $roleMap[$rRow['role_name']] = intval($rRow['id']);
+    }
+    $rStmt->close();
+
+    // ✅ Valid roles dynamically check karo
+    $validRoles = array_keys($roleMap);
+    if (!in_array($data['role'], $validRoles)) {
         echo json_encode(['success' => false, 'message' => 'Invalid role selected']);
         exit;
     }
@@ -86,20 +98,14 @@ try {
     $organization_id   = !empty($data['organization_id'])   ? intval($data['organization_id']) : null;
     $organization_name = !empty($data['organization_name']) ? $data['organization_name']       : null;
 
-    // ── Role → userType (roles table ke hisab se) ──
-    // 2=OrgAdmin, 3=BranchManager, 4=driver, 5=teacher, 6=parent
-    $roleMap = [
-        'school_admin' => 2,  // OrgAdmin
-        'school_staff' => 3,  // BranchManager
-        'driver'       => 4,  // driver
-        'teacher'      => 5,  // teacher
-        'parent'       => 6,  // parent
-    ];
+    // ✅ Role → userType dynamically from DB roleMap
     $userType = $roleMap[$data['role']] ?? 3;
 
     // ── Lat/Lng sirf parent ke liye ──
-    $lat = ($data['role'] === 'parent' && !empty($data['latitude'])  && $data['latitude']  != '0') ? floatval($data['latitude'])  : null;
-    $lng = ($data['role'] === 'parent' && !empty($data['longitude']) && $data['longitude'] != '0') ? floatval($data['longitude']) : null;
+    $parentRoleName = array_search(6, $roleMap); // 'parent' ya jo bhi DB mein ho
+    $isParent = ($data['role'] === 'parent' || ($parentRoleName && $data['role'] === $parentRoleName));
+    $lat = ($isParent && !empty($data['latitude'])  && $data['latitude']  != '0') ? floatval($data['latitude'])  : null;
+    $lng = ($isParent && !empty($data['longitude']) && $data['longitude'] != '0') ? floatval($data['longitude']) : null;
 
     $conn->begin_transaction();
 
@@ -130,8 +136,8 @@ try {
             $country,           // s9
             $zipcode,           // s10
             $phone_number,      // s11
-            $organization_id,         // i12
-            $organization_name,       // s13
+            $organization_id,   // i12
+            $organization_name, // s13
             $userType,          // i14
             $lat,               // d15
             $lng,               // d16
@@ -152,18 +158,18 @@ try {
             'success' => true,
             'message' => 'Account created successfully!',
             'data'    => [
-                'user_id'      => $userId,
-                'driverId'     => $driverId,
-                'username'     => $data['username'],
-                'firstName'    => $data['firstName'],
-                'lastName'     => $data['lastName'],
-                'email'        => $data['email'],
-                'phone_number' => $phone_number,
-                'city'         => $city,
-                'role'         => $data['role'],
-                'userType'     => $userType,
-                'organization_id'    => $organization_id,
-                'organization_name'  => $organization_name
+                'user_id'           => $userId,
+                'driverId'          => $driverId,
+                'username'          => $data['username'],
+                'firstName'         => $data['firstName'],
+                'lastName'          => $data['lastName'],
+                'email'             => $data['email'],
+                'phone_number'      => $phone_number,
+                'city'              => $city,
+                'role'              => $data['role'],
+                'userType'          => $userType,
+                'organization_id'   => $organization_id,
+                'organization_name' => $organization_name
             ]
         ]);
 

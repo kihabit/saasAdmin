@@ -118,9 +118,17 @@ if (isset($_SESSION['flash_message'])) {
     $flashType    = $_SESSION['flash_type'] ?? 'error';
     unset($_SESSION['flash_message'],$_SESSION['flash_type']);
 }
+
+// ✅ Roles dynamically fetch karo (prt=0 wale - super_admin nahi dikhega)
+$roles = [];
+$rStmt = $conn->prepare("SELECT id, role_name FROM roles WHERE prt = 0 ORDER BY id ASC");
+$rStmt->execute();
+$rResult = $rStmt->get_result();
+while ($rRow = $rResult->fetch_assoc()) { $roles[] = $rRow; }
+$rStmt->close();
+
 $db->close();
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -150,15 +158,11 @@ $db->close();
         .alert-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;}
         .alert-warning{background:#fef3c7;border:1px solid #fbbf24;color:#92400e;}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-
-        /* Info Card */
         .info-card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;}
         .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.75rem;}
         .info-item{display:flex;flex-direction:column;gap:3px;}
         .info-label{font-size:.7rem;color:#718096;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
         .info-value{font-size:.82rem;font-weight:600;color:#1a202c;}
-
-        /* Edit Card */
         .edit-card{background:white;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:1.5rem;}
         .card-header{background:linear-gradient(135deg,#0000FF,#4169E1);color:white;padding:1rem 1.5rem;display:flex;align-items:center;gap:10px;}
         .card-header h2{font-size:1.1rem;font-weight:700;}
@@ -184,25 +188,6 @@ $db->close();
         .btn-primary:hover{background:#0000CC;transform:translateY(-1px);}
         .btn-secondary{background:#f7fafc;color:#4a5568;border:1px solid #e2e8f0;}
         .btn-secondary:hover{background:#e2e8f0;}
-        .btn-danger{background:#dc2626;color:white;}
-        .btn-danger:hover{background:#b91c1c;}
-        .btn-warning{background:#f59e0b;color:white;}
-        .btn-warning:hover{background:#d97706;}
-        .btn-sm{padding:5px 10px;font-size:.76rem;}
-
-        /* Modals */
-        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:2000;}
-        .modal-overlay.active{display:flex;}
-        .modal{background:white;border-radius:14px;padding:1.5rem;max-width:560px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);}
-        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
-        .modal-title{font-size:1.1rem;font-weight:700;color:#1a202c;display:flex;align-items:center;gap:10px;}
-        .modal-title i{color:#0000FF;}
-        .modal-close{background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;padding:4px;line-height:1;transition:color 0.3s;}
-        .modal-close:hover{color:#1a202c;}
-        .form-checkbox{display:flex;align-items:center;gap:8px;margin-top:0.4rem;font-size:.82rem;}
-        .form-checkbox input{width:16px;height:16px;cursor:pointer;}
-
-        /* Organization Search */
         .organization-search-wrapper{position:relative;}
         .organization-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1.5px solid #0000FF;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,255,0.12);z-index:500;max-height:220px;overflow-y:auto;}
         .organization-dropdown.open{display:block;}
@@ -221,9 +206,8 @@ $db->close();
         .match-highlight{color:#0000FF;font-weight:700;}
         .organization-readonly{background:#f0fdf4!important;cursor:not-allowed;color:#15803d;font-weight:600;}
         @keyframes spin{to{transform:rotate(360deg);}}
-
-        @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-wrapper{margin-left:0}.form-grid{grid-template-columns:1fr}.orders-grid{grid-template-columns:1fr}}
-        @media(max-width:768px){.main-content{padding:.75rem}.card-body{padding:1rem}.form-actions,.order-actions{flex-direction:column}}
+        @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-wrapper{margin-left:0}.form-grid{grid-template-columns:1fr}}
+        @media(max-width:768px){.main-content{padding:.75rem}.card-body{padding:1rem}.form-actions{flex-direction:column}}
     </style>
 </head>
 <body>
@@ -275,8 +259,10 @@ $db->close();
                     </div>
                     <?php endif; ?>
                     <?php if(!empty($user['userType'])): ?>
-                    <?php 
-                    $typeLabels = [1=>'Admin',2=>'Teacher',3=>'Staff',4=>'Driver',5=>'Student',6=>'Parent'];
+                    <?php
+                    // ✅ Dynamic typeLabel from roles
+                    $typeLabels = [];
+                    foreach($roles as $r) { $typeLabels[$r['id']] = ucwords(str_replace('_',' ',$r['role_name'])); }
                     $typeLabel = $typeLabels[$user['userType']] ?? 'Unknown';
                     ?>
                     <div class="info-item">
@@ -379,19 +365,13 @@ $db->close();
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-user-tag"></i>User Type</label>
+                                    <!-- ✅ Dynamic roles from DB (prt=0 wale) -->
                                     <select name="userType" class="form-input">
                                         <option value="">-- Select Type --</option>
-                                        <?php 
-                                        $userTypes = [
-                                            1 => 'Admin',
-                                            2 => 'Teacher',
-                                            3 => 'Staff',
-                                            4 => 'Driver',
-                                            5 => 'Student',
-                                            6 => 'Parent'
-                                        ];
-                                        foreach($userTypes as $val => $label): ?>
-                                        <option value="<?php echo $val; ?>" <?php echo ($user['userType']??'')==$val?'selected':''; ?>><?php echo $label; ?></option>
+                                        <?php foreach($roles as $role): ?>
+                                        <option value="<?php echo $role['id']; ?>" <?php echo ($user['userType']??'')==$role['id']?'selected':''; ?>>
+                                            <?php echo htmlspecialchars(ucwords(str_replace('_',' ',$role['role_name']))); ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -481,7 +461,6 @@ $db->close();
 </div>
 
 <script>
-// SCHOOL SEARCH
 const schoolSearchInput   = document.getElementById('schoolSearch');
 const schoolDropdown      = document.getElementById('schoolDropdown');
 const schoolDropdownBody  = document.getElementById('schoolDropdownBody');
@@ -495,11 +474,10 @@ const schoolIdHidden      = document.getElementById('school_id_hidden');
 const schoolNameHidden    = document.getElementById('school_name_hidden');
 
 let schoolTimer = null, selectedSchool = null, highlightedIndex = -1, currentResults = [];
-
 if (schoolIdHidden.value) selectedSchool = { id: schoolIdHidden.value, name: schoolNameHidden.value };
 
 async function searchSchools(q) {
-    try { const r = await fetch(`search_school.php?q=${encodeURIComponent(q)}`); const d = await r.json(); return d.schools||[]; }
+    try { const r = await fetch(`../organization/search_organization.php?q=${encodeURIComponent(q)}`); const d = await r.json(); return d.schools||[]; }
     catch(e) { return []; }
 }
 

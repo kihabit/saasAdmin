@@ -118,6 +118,19 @@ if (isset($_SESSION['flash_message'])) {
     $flashType    = $_SESSION['flash_type'] ?? 'error';
     unset($_SESSION['flash_message'],$_SESSION['flash_type']);
 }
+
+// ✅ Roles dynamically fetch karo (prt=0 wale - super_admin nahi dikhega)
+$roles = [];
+$rStmt = $conn->prepare("SELECT id, role_name FROM roles WHERE prt = 0 ORDER BY id ASC");
+$rStmt->execute();
+$rResult = $rStmt->get_result();
+while ($rRow = $rResult->fetch_assoc()) { $roles[] = $rRow; }
+$rStmt->close();
+
+// ✅ typeLabels array dynamically banao
+$typeLabels = [];
+foreach($roles as $r) { $typeLabels[$r['id']] = ucwords(str_replace('_',' ',$r['role_name'])); }
+
 $db->close();
 ?>
 <!DOCTYPE html>
@@ -275,8 +288,8 @@ $db->close();
                     </div>
                     <?php endif; ?>
                     <?php if(!empty($user['userType'])): ?>
-                    <?php 
-                    $typeLabels = [1=>'Admin',2=>'Teacher',3=>'Staff',4=>'Driver',5=>'Student',6=>'Parent'];
+                    <?php
+                    // ✅ Dynamic typeLabel from roles
                     $typeLabel = $typeLabels[$user['userType']] ?? 'Unknown';
                     ?>
                     <div class="info-item">
@@ -379,12 +392,13 @@ $db->close();
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label"><i class="fas fa-user-tag"></i>User Type</label>
+                                    <!-- ✅ Dynamic roles from DB (prt=0 wale) -->
                                     <select name="userType" class="form-input">
                                         <option value="">-- Select Type --</option>
-                                        <?php 
-                                        $userTypes = [1=>'Admin',2=>'Teacher',3=>'Staff',4=>'Driver',5=>'Student',6=>'Parent'];
-                                        foreach($userTypes as $val => $label): ?>
-                                        <option value="<?php echo $val; ?>" <?php echo ($user['userType']??'')==$val?'selected':''; ?>><?php echo $label; ?></option>
+                                        <?php foreach($roles as $role): ?>
+                                        <option value="<?php echo $role['id']; ?>" <?php echo ($user['userType']??'')==$role['id']?'selected':''; ?>>
+                                            <?php echo htmlspecialchars(ucwords(str_replace('_',' ',$role['role_name']))); ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

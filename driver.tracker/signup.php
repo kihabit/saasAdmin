@@ -11,7 +11,21 @@ require_once 'config.php';
 try {
     $db = Database::getInstance();
     $conn = $db->getConnection();
-    
+
+    // GET requests return role list (dynamic from roles table)
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $roles = [];
+        $rolesQuery = "SELECT id, role_name FROM roles ORDER BY id ASC";
+        $rolesResult = $conn->query($rolesQuery);
+        if ($rolesResult) {
+            while ($row = $rolesResult->fetch_assoc()) {
+                $roles[] = $row;
+            }
+        }
+        echo json_encode(['success' => true, 'roles' => $roles]);
+        exit;
+    }
+
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
     
@@ -31,7 +45,17 @@ try {
         exit;
     }
     
-    if (!in_array($data['role'], ['school_admin', 'school_staff', 'driver', 'teacher', 'parent'])) {
+    // Load valid roles from database (dynamic)
+    $roleMap = [];
+    $rolesQuery = "SELECT id, role_name FROM roles";
+    $rolesResult = $conn->query($rolesQuery);
+    if ($rolesResult) {
+        while ($row = $rolesResult->fetch_assoc()) {
+            $roleMap[$row['role_name']] = intval($row['id']);
+        }
+    }
+
+    if (empty($data['role']) || !isset($roleMap[$data['role']])) {
         echo json_encode(['success' => false, 'message' => 'Invalid role selected']);
         exit;
     }
@@ -72,8 +96,7 @@ try {
     $organization_id   = !empty($data['organization_id'])   ? intval($data['organization_id']) : null;
     $organization_name = !empty($data['organization_name']) ? $data['organization_name']       : null;
 
-    $roleMap  = ['school_admin'=>2, 'school_staff'=>3, 'driver'=>4, 'teacher'=>5, 'parent'=>6];
-    $userType = $roleMap[$data['role']] ?? 2;
+    $userType = $roleMap[$data['role']];
 
     $lat = ($data['role'] === 'parent' && !empty($data['latitude'])  && $data['latitude']  != '0') ? $data['latitude']  : null;
     $lng = ($data['role'] === 'parent' && !empty($data['longitude']) && $data['longitude'] != '0') ? $data['longitude'] : null;

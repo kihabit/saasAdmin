@@ -17,6 +17,17 @@ $username = $_SESSION['username'] ?? '';
 if (isset($_GET['logout'])) {
     session_unset(); session_destroy(); redirect(LOGIN_PAGE);
 }
+
+// Fetch roles from database
+$db = Database::getInstance()->getConnection();
+$roles_query = "SELECT id, role_name FROM roles WHERE prt = 0 ORDER BY id ASC";
+$roles_result = $db->query($roles_query);
+$roles = [];
+if ($roles_result) {
+    while ($row = $roles_result->fetch_assoc()) {
+        $roles[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -252,11 +263,9 @@ if (isset($_GET['logout'])) {
                                     <div class="iw"><i class="fas fa-users ii"></i>
                                         <select id="role" class="fc">
                                             <option value="">-- Select Type --</option>
-                                            <option value="school_admin">Organization Admin</option>
-                                            <option value="school_staff">Branch Manager</option>
-                                            <option value="driver">Driver</option>
-                                            <option value="teacher">Teacher</option>
-                                            <option value="parent">Parent</option>
+                                            <?php foreach ($roles as $role): ?>
+                                                <option value="<?php echo htmlspecialchars($role['role_name']); ?>"><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $role['role_name']))); ?></option>
+                                            <?php endforeach; ?>
                                         </select>
                                     </div>
                                     <span class="ferr" id="roleError">Please select a user type</span>

@@ -223,6 +223,16 @@ if (isset($_GET['logout'])) {
     redirect(LOGIN_PAGE);
 }
 
+// ✅ Roles dynamically fetch karo (prt=0 wale - super_admin nahi dikhega)
+$roleNames = [];
+$rStmt = $conn->prepare("SELECT id, role_name FROM roles WHERE prt = 0 ORDER BY id ASC");
+$rStmt->execute();
+$rResult = $rStmt->get_result();
+while ($rRow = $rResult->fetch_assoc()) {
+    $roleNames[$rRow['id']] = ucwords(str_replace('_', ' ', $rRow['role_name']));
+}
+$rStmt->close();
+
 $db->close();
 ?>
 <!DOCTYPE html>
@@ -496,7 +506,7 @@ $db->close();
                             </td>
                             <td style="white-space:nowrap;">
                                 <?php
-                                $roleNames = [1=>'Super Admin',2=>'Organization Admin',3=>'Branch Manager',4=>'Driver',5=>'Teacher',6=>'Parent'];
+                                // ✅ Dynamic roleNames from DB
                                 $ut = intval($user['userType'] ?? 0);
                                 echo isset($roleNames[$ut]) ? htmlspecialchars($roleNames[$ut]) : '—';
                                 ?>

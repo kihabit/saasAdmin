@@ -69,13 +69,17 @@ try {
     $whereClause = ''; $params = []; $types = '';
 
     if (!empty($search)) {
-        $whereClause = "WHERE c.name LIKE ? OR c.roll_number LIKE ? OR c.class LIKE ? OR c.section LIKE ?";
+        $whereClause = "WHERE c.name LIKE ? OR c.roll_number LIKE ? OR c.class LIKE ? OR c.section LIKE ?
+                        OR p.firstName LIKE ? OR p.lastName LIKE ? OR p.username LIKE ?";
         $searchTerm  = '%' . $search . '%';
-        $params      = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
-        $types       = 'ssss';
+        $params      = [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm];
+        $types       = 'sssssss';
     }
 
-    $countSql = "SELECT COUNT(*) as total FROM students c $whereClause";
+    $countSql = "SELECT COUNT(*) as total FROM students c
+                 LEFT JOIN edu_user p ON c.parent_id = p.user_id
+                 LEFT JOIN edu_user d ON c.driver_id = d.driverId
+                 $whereClause";
     if ($whereClause) {
         $stmt = $conn->prepare($countSql); $stmt->bind_param($types, ...$params); $stmt->execute();
         $totalChildren = $stmt->get_result()->fetch_assoc()['total']; $stmt->close();
@@ -86,12 +90,20 @@ try {
     $activeResult = $conn->query("SELECT COUNT(*) as total FROM students WHERE status = 'active'");
     if ($activeResult) $totalActive = $activeResult->fetch_assoc()['total'];
 
+    // ✅ edu_user se parent + driver info JOIN karke fetch karo
     $sql = "SELECT c.id, c.organization_id, c.parent_id, c.driver_id, c.name, c.class, c.section,
                    c.roll_number, c.gender, c.dob, c.photo, c.pickup_address, c.drop_address,
                    c.pickup_lat, c.pickup_lng, c.status, c.created_at, c.updated_at,
-                   NULL as parent_firstName, NULL as parent_lastName,
-                   NULL as parent_username, NULL as parent_email, NULL as parent_phone
+                   p.firstName    AS parent_firstName,
+                   p.lastName     AS parent_lastName,
+                   p.username     AS parent_username,
+                   p.phone_number AS parent_phone,
+                   d.firstName    AS driver_firstName,
+                   d.lastName     AS driver_lastName,
+                   d.user_id      AS driver_user_id
             FROM students c
+            LEFT JOIN edu_user p ON c.parent_id = p.user_id
+            LEFT JOIN edu_user d ON c.driver_id = d.driverId
             $whereClause
             ORDER BY c.created_at DESC
             LIMIT ? OFFSET ?";
@@ -107,7 +119,7 @@ try {
     while ($row = $result->fetch_assoc()) $students[] = $row;
     $stmt->close();
 
-    $pr = $conn->query("SELECT COUNT(DISTINCT parent_id) as cnt FROM students");
+    $pr = $conn->query("SELECT COUNT(DISTINCT parent_id) as cnt FROM students WHERE parent_id IS NOT NULL");
     $parentCount = $pr ? $pr->fetch_assoc()['cnt'] : 0;
 
 } catch (Exception $e) {
@@ -213,9 +225,11 @@ $db->close();
         .child-details h4 { font-weight: 600; color: #1a202c; margin-bottom: 1px; font-size: .88rem; }
         .child-details p { font-size: .76rem; color: #718096; }
 
-        .parent-info { font-size: .85rem; }
-        .parent-info strong { color: #1a202c; display: block; }
-        .parent-info span { color: #718096; font-size: .78rem; }
+        /* ✅ Parent info styles */
+        .parent-info { font-size: .82rem; line-height: 1.5; }
+        .parent-info strong { color: #1a202c; display: block; font-size: .84rem; }
+        .parent-info span { color: #718096; font-size: .75rem; }
+        .parent-info .parent-phone { color: #0000FF; font-size: .75rem; }
 
         .gender-badge { padding: 3px 9px; border-radius: 20px; font-size: .73rem; font-weight: 600; }
         .gender-male   { background: #dbeafe; color: #1d4ed8; }
@@ -361,6 +375,8 @@ $db->close();
                     <thead>
                         <tr>
                             <th>Child</th>
+                            <th>Parent</th>
+                            <th>Driver</th>
                             <th>Class / Section</th>
                             <th>Roll No.</th>
                             <th>Pickup Address</th>
@@ -386,6 +402,35 @@ $db->close();
                                     <p>ID: <?php echo $child['id']; ?></p>
                                 </div>
                             </div>
+                        </td>
+                        <!-- ✅ Parent naam -->
+                        <td>
+                            <?php if (!empty($child['parent_firstName']) || !empty($child['parent_lastName'])): ?>
+                                <div class="parent-info">
+                                    <strong><?php echo htmlspecialchars(trim(($child['parent_firstName'] ?? '') . ' ' . ($child['parent_lastName'] ?? ''))); ?></strong>
+                                    <?php if (!empty($child['parent_phone'])): ?>
+                                        <span class="parent-phone">📞 <?php echo htmlspecialchars($child['parent_phone']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($child['parent_username'])): ?>
+                                        <span>@<?php echo htmlspecialchars($child['parent_username']); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <!-- ✅ Driver naam -->
+                        <td>
+                            <?php if (!empty($child['driver_firstName']) || !empty($child['driver_lastName'])): ?>
+                                <div class="parent-info">
+                                    <strong>🚌 <?php echo htmlspecialchars(trim(($child['driver_firstName'] ?? '') . ' ' . ($child['driver_lastName'] ?? ''))); ?></strong>
+                                    <?php if (!empty($child['driver_user_id'])): ?>
+                                        <span style="color:#718096;font-size:.73rem;">ID: <?php echo htmlspecialchars($child['driver_user_id']); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <strong><?php echo htmlspecialchars($child['class']); ?></strong>

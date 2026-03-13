@@ -164,11 +164,7 @@
                     <i class="input-icon">👥</i>
                     <select id="role" class="form-select" required>
                         <option value="">-- Choose Type --</option>
-                        <option value="school_admin">Organization Admin</option>
-                        <option value="school_staff">Branch Manager</option>
-                        <option value="driver">Driver</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="parent">Parent</option>
+                        <!-- Options loaded dynamically from server -->
                     </select>
                 </div>
                 <div class="field-error" id="roleError">Please select a user type</div>
@@ -380,6 +376,28 @@ const locationBanner       = document.getElementById('locationBanner');
 const locationSpinner      = document.getElementById('locationSpinner');
 const locationIcon         = document.getElementById('locationIcon');
 const locationText         = document.getElementById('locationText');
+
+// ── Role Options (loaded from server) ───────────────────────────────────────
+async function loadRoleOptions() {
+    try {
+        const res = await fetch('signup.php');
+        const data = await res.json();
+        if (!data.success || !Array.isArray(data.roles)) {
+            console.warn('Unable to load role options', data);
+            return;
+        }
+        const currentValue = roleInput.value;
+        roleInput.innerHTML = '<option value="">-- Choose Type --</option>' +
+            data.roles.map(r => `
+                <option value="${r.role_name}">${r.role_name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+            `).join('');
+        if (currentValue) {
+            roleInput.value = currentValue;
+        }
+    } catch (err) {
+        console.error('Failed to load roles:', err);
+    }
+}
 
 // ══ SCHOOL SEARCH ═════════════════════════════════════════════════════════
 const schoolSearchInput   = document.getElementById('schoolSearch');
@@ -718,6 +736,9 @@ signupForm.addEventListener('submit', function(e) {
 
 document.getElementById('termsLink').addEventListener('click', e => { e.preventDefault(); alert('Terms of Service'); });
 document.getElementById('privacyLink').addEventListener('click', e => { e.preventDefault(); alert('Privacy Policy'); });
+
+// Load dynamic role options from server
+loadRoleOptions();
 
 updateSubmitButton();
 </script>
