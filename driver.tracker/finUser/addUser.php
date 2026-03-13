@@ -253,7 +253,7 @@ if (isset($_GET['logout'])) {
                                         <select id="role" class="fc">
                                             <option value="">-- Select Type --</option>
                                             <option value="school_admin">Organization Admin</option>
-                                            <option value="school_staff">Organization Staff</option>
+                                          <option value="school_staff">Branch Manager</option>
                                             <option value="driver">Driver</option>
                                             <option value="teacher">Teacher</option>
                                             <option value="parent">Parent</option>
